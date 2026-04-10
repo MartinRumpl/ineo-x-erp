@@ -207,8 +207,9 @@ nav a svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8;
 <a data-p="fahrtenbuch" onclick="go('fahrtenbuch')"><svg viewBox="0 0 24 24"><path d="M5 17h14M5 17a2 2 0 01-2-2v-5l2-5h14l2 5v5a2 2 0 01-2 2M5 17v2M19 17v2"/><circle cx="7" cy="14" r="1"/><circle cx="17" cy="14" r="1"/></svg>Fahrtenbuch</a>
 <a data-p="bk" onclick="go('bk')"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>Betriebskosten</a>
 <div class="ns">Angebot / Bestellung / Rechnung</div>
-<a data-p="technik-best" onclick="go('technik-best')"><svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><path d="M3 6h18M16 10a4 4 0 01-8 0"/></svg>Bestellungen</a>
-<a data-p="technik-rech" onclick="go('technik-rech')"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M9 15l2 2 4-4"/></svg>Rechnungen</a>
+<a data-p="technik-ang" onclick="go('technik-ang')"><svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>Angebote <span id="navAngebWarn" style="display:none;background:var(--red);color:#fff;border-radius:10px;font-size:9px;padding:1px 5px;margin-left:4px">!</span></a>
+<a data-p="technik-best" onclick="go('technik-best')"><svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><path d="M3 6h18M16 10a4 4 0 01-8 0"/></svg>Bestellungen <span id="navBestWarn" style="display:none;background:var(--red);color:#fff;border-radius:10px;font-size:9px;padding:1px 5px;margin-left:4px">!</span></a>
+<a data-p="technik-rech" onclick="go('technik-rech')"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M9 15l2 2 4-4"/></svg>Rechnungen <span id="navRechWarn" style="display:none;background:var(--red);color:#fff;border-radius:10px;font-size:9px;padding:1px 5px;margin-left:4px">!</span></a>
 <div class="ns">System</div>
 <a data-p="settings" onclick="go('settings')"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09"/></svg>Einstellungen</a>
 <a data-p="benutzer" onclick="go('benutzer')" id="navBenutzer" style="display:none"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>Benutzer</a>
@@ -271,6 +272,33 @@ nav a svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8;
     <table class="tbl">
       <thead><tr><th>Titel</th><th>Objekt</th><th>Wohnung</th><th>Kategorie</th><th>Positionen</th><th>Gesamt</th><th>Erstellt</th><th style="width:80px"></th></tr></thead>
       <tbody id="tkKalkTB"></tbody>
+    </table>
+  </div></div>
+</div>
+
+<!-- ===== TECHNIK: ANGEBOTE ===== -->
+<div class="page" id="p-technik-ang">
+  <div class="topbar">
+    <h1>📋 Angebote</h1>
+    <button class="btn btn-p" onclick="tkOpenNewAngeb()"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Neues Angebot</button>
+  </div>
+  <div id="tkAngKPI" class="tk-kgrid"></div>
+  <div id="tkAngWarnBox" style="margin-bottom:10px"></div>
+  <div class="tk-filter-bar">
+    <select id="tkAngFilterSt" onchange="tkRenderAngeb()">
+      <option value="">Alle Status</option>
+      <option value="offen">Offen</option>
+      <option value="angenommen">Angenommen</option>
+      <option value="abgelehnt">Abgelehnt</option>
+      <option value="abgelaufen">Abgelaufen</option>
+    </select>
+    <select id="tkAngFilterObj" onchange="tkRenderAngeb()"><option value="">Alle Objekte</option></select>
+    <input id="tkAngSearch" oninput="tkRenderAngeb()" placeholder="🔍 Lieferant, Titel..." style="flex:1;min-width:200px">
+  </div>
+  <div class="panel"><div style="overflow-x:auto">
+    <table class="tbl">
+      <thead><tr><th>Titel / Leistung</th><th>Lieferant</th><th>Betrag</th><th>Datum</th><th>Gültig bis</th><th>Objekt/Wohnung</th><th>Status</th><th style="width:140px"></th></tr></thead>
+      <tbody id="tkAngTB"></tbody>
     </table>
   </div></div>
 </div>
@@ -521,7 +549,12 @@ nav a svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8;
     <div class="mhd"><h3 id="tkBestMT">Neue Bestellung</h3><button class="mx" onclick="tkCloseBestM()">&#10005;</button></div>
     <div class="mbd">
       <input type="hidden" id="tkBestId">
+      <input type="hidden" id="tkBestAngebId">
       <div class="fgrid">
+        <div id="tkBestAngebInfo" style="display:none;grid-column:1/-1;background:rgba(201,168,76,.08);border:1px solid var(--gold-dark);border-radius:8px;padding:10px 14px;font-size:11px;margin-bottom:2px">
+          📋 <strong style="color:var(--gold)">Verknüpftes Angebot:</strong> <span id="tkBestAngebLabel"></span>
+          <span id="tkBestAngebDiff" style="margin-left:10px"></span>
+        </div>
         <div class="fg"><label>Lieferant *</label><input id="tkBestLief" placeholder="Firma oder Name"></div>
         <div class="fg"><label>Artikel *</label><input id="tkBestArt" placeholder="Was wird bestellt?"></div>
         <div class="fg"><label>Menge</label><input id="tkBestMenge" type="number" step="0.01" placeholder="1"></div>
@@ -2090,7 +2123,7 @@ function delAufgabe(id){
 // === KALENDER ===
 var cY,cMo,calendar,currentCalView='dayGridMonth';
 var CAL_COLORS={'Besichtigung':'#5a8ed4','Makler Termin':'#c9a84c','Bank Termin':'#5cb87a','Reminder':'#d45a5a','Intern':'#7d8597','Outlook Termin':'#8b5cf6','Feiertag':'#ef4444'};
-var outlookCfg={tenantId:'e870127e-19eb-44fa-8bb3-31cc7774cfc5',clientId:'e7baf7ee-78c3-4a8d-8f14-aed3469d4d14',redirectUri:(window.location.protocol==='file:'?'http://localhost':window.location.origin+window.location.pathname),scopes:['openid','profile','offline_access','User.Read','Calendars.ReadWrite'],connected:false,lastSync:null,accessToken:'',accountName:'',syncRunning:false};
+var outlookCfg={tenantId:'e870127e-19eb-44fa-8bb3-31cc7774cfc5',clientId:'e7baf7ee-78c3-4a8d-8f14-aed3469d4d14',redirectUri:(window.location.protocol==='file:'?'http://localhost':window.location.origin+'/index.html'),scopes:['openid','profile','offline_access','User.Read','Calendars.ReadWrite'],connected:false,lastSync:null,accessToken:'',accountName:'',syncRunning:false};
 function pad2(n){return String(n).padStart(2,'0')}
 function toYmd(d){return d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate())}
 function addDays(date,days){var d=new Date(date);d.setDate(d.getDate()+days);return d}
@@ -2740,11 +2773,13 @@ function tkBadge(status,type){
   // type: 'best' | 'rech' | 'angeb'
   var map={
     neu:'tk-st-neu',bestellt:'tk-st-bestellt','bestätigt':'tk-st-bestaetigt',geliefert:'tk-st-geliefert',abgeschlossen:'tk-st-abgeschlossen',
-    offen:'tk-st-offen',geprueft:'tk-st-geprueft',abweichung:'tk-st-abweichung',freigegeben:'tk-st-freigegeben',bezahlt:'tk-st-bezahlt'
+    offen:'tk-st-offen',geprueft:'tk-st-geprueft',abweichung:'tk-st-abweichung',freigegeben:'tk-st-freigegeben',bezahlt:'tk-st-bezahlt',
+    angenommen:'tk-st-geprueft',abgelehnt:'tk-st-abweichung',abgelaufen:'tk-st-abweichung'
   };
   var labels={
     neu:'Neu',bestellt:'Bestellt','bestätigt':'✅ Bestätigt',geliefert:'Geliefert',abgeschlossen:'Abgeschlossen',
-    offen:'Offen',geprueft:'✅ Geprüft',abweichung:'⚠ Abweichung',freigegeben:'Freigegeben',bezahlt:'Bezahlt'
+    offen:'Offen',geprueft:'✅ Geprüft',abweichung:'⚠ Abweichung',freigegeben:'Freigegeben',bezahlt:'Bezahlt',
+    angenommen:'✅ Angenommen',abgelehnt:'Abgelehnt',abgelaufen:'⚠ Abgelaufen'
   };
   var cls=map[status]||'td';
   return '<span class="tk-stat-badge '+cls+'">'+(labels[status]||status)+'</span>';
@@ -3005,30 +3040,52 @@ function tkRenderBest(){
 
   // Tabelle
   var h='';
+  var warnCount=0;
   list.forEach(function(b){
     var summe=(parseFloat(b.preis)||0)*(parseFloat(b.menge)||1);
     var bezug=tkObjLabel(b.objekt_id)+(b.einheit_id?(' / '+tkEinLabel(b.einheit_id)):'');
+    // Warnungen berechnen
+    var warnHtml='';
+    var ang=b.angebot_id?TANGEB.find(function(a){return a.id===b.angebot_id}):null;
+    if(ang){
+      var angBetrag=parseFloat(ang.betrag)||0;
+      var abBetrag=parseFloat(b.ab_betrag)||0;
+      if(abBetrag>0&&Math.abs(abBetrag-angBetrag)>0.01){
+        var diff=abBetrag-angBetrag;
+        warnHtml='<span title="AB-Betrag weicht vom Angebot ab" style="color:var(--red);font-size:10px;cursor:pointer" onclick="tkEditBest(\''+b.id+'\')">⚠ AB '+(diff>0?'+':'')+tkEur(diff)+'</span>';
+        warnCount++;
+      } else if(abBetrag===0&&(b.status==='bestellt')&&b.lieferdatum){
+        var d=new Date(b.lieferdatum),now=new Date();
+        if(d<now){warnHtml='<span style="color:var(--gold);font-size:10px">⚠ Lieferverzug</span>';warnCount++;}
+      }
+    } else if(!b.angebot_id&&b.status!=='abgeschlossen'){
+      warnHtml='<span style="color:var(--text-dim);font-size:10px" title="Kein Angebot verknüpft">○ Kein Angebot</span>';
+    }
     h+='<tr>';
     h+='<td><strong>'+escHtml(b.lieferant||'–')+'</strong></td>';
-    h+='<td>'+escHtml(b.artikel||'–')+'</td>';
-    h+='<td class="td-m">'+(b.menge||1)+' '+(b.mengeeinheit||'')+'</td>';
+    h+='<td>'+escHtml(b.artikel||'–')+(ang?'<br><span style="font-size:9px;color:var(--gold)">📋 '+escHtml(ang.titel||'')+'</span>':'')+'</td>';
+    h+='<td class="td-m">'+(b.menge||1)+'</td>';
     h+='<td class="td-m" style="font-family:var(--mono)">'+tkEur(summe)+'</td>';
     h+='<td class="td-m">'+(b.lieferdatum||'–')+'</td>';
     h+='<td class="td-m">'+bezug+'</td>';
     h+='<td>'+tkBadge(b.status,'best')+'</td>';
-    h+='<td>';
+    h+='<td style="white-space:nowrap">';
+    if(warnHtml)h+=warnHtml+'<br>';
     h+='<button class="btn btn-s" onclick="tkEditBest(\''+b.id+'\')" style="padding:4px 8px;font-size:10px">✎</button> ';
     h+='<button class="btn btn-s" onclick="tkBestSendMailById(\''+b.id+'\')" style="padding:4px 8px;font-size:10px" title="E-Mail senden">✉</button> ';
     h+='<button class="btn btn-s" onclick="tkDelBest(\''+b.id+'\')" style="padding:4px 8px;font-size:10px;color:var(--red)">✕</button>';
     h+='</td></tr>';
   });
   if(!h)h='<tr><td colspan="8" style="text-align:center;padding:28px;color:var(--text-dim)">Noch keine Bestellungen vorhanden</td></tr>';
+  var bwEl=document.getElementById('navBestWarn');if(bwEl)bwEl.style.display=warnCount>0?'inline':'none';
   document.getElementById('tkBestTB').innerHTML=h;
 }
 
 /** Neue Bestellung öffnen */
 function tkOpenNewBest(){
   document.getElementById('tkBestId').value='';
+  document.getElementById('tkBestAngebId').value='';
+  document.getElementById('tkBestAngebInfo').style.display='none';
   document.getElementById('tkBestMT').textContent='Neue Bestellung';
   document.getElementById('tkBestLief').value='';
   document.getElementById('tkBestArt').value='';
@@ -3055,6 +3112,24 @@ function tkEditBest(id){
   var b=TBEST.find(function(x){return x.id===id});
   if(!b)return;
   document.getElementById('tkBestId').value=b.id;
+  // Verknüpftes Angebot anzeigen
+  document.getElementById('tkBestAngebId').value=b.angebot_id||'';
+  var ang=b.angebot_id?TANGEB.find(function(a){return a.id===b.angebot_id}):null;
+  if(ang){
+    document.getElementById('tkBestAngebLabel').textContent=ang.titel+' — '+tkEur(ang.betrag);
+    var abBetrag=parseFloat(b.ab_betrag)||0;
+    var angBetrag=parseFloat(ang.betrag)||0;
+    var diffEl=document.getElementById('tkBestAngebDiff');
+    if(abBetrag>0&&Math.abs(abBetrag-angBetrag)>0.01){
+      var diff=abBetrag-angBetrag;
+      diffEl.innerHTML='<span style="color:var(--red);font-weight:700">⚠ AB weicht ab: '+(diff>0?'+':'')+tkEur(diff)+'</span>';
+    } else if(abBetrag>0){
+      diffEl.innerHTML='<span style="color:var(--green)">✅ AB stimmt überein</span>';
+    } else { diffEl.innerHTML=''; }
+    document.getElementById('tkBestAngebInfo').style.display='block';
+  } else {
+    document.getElementById('tkBestAngebInfo').style.display='none';
+  }
   document.getElementById('tkBestMT').textContent='✎ Bestellung bearbeiten';
   document.getElementById('tkBestLief').value=b.lieferant||'';
   document.getElementById('tkBestArt').value=b.artikel||'';
@@ -3104,8 +3179,9 @@ function tkSaveBest(){
   var abFileInput=document.getElementById('tkBestAbFile');
   var abFileName=abFileInput&&abFileInput.files&&abFileInput.files[0]?abFileInput.files[0].name:(document.getElementById('tkBestAbFileName').textContent!=='Keine Datei ausgewählt'?document.getElementById('tkBestAbFileName').textContent:'');
 
-  var dbRow={lieferant:lief,artikel:art,menge:menge,preis:preis,lieferdatum:ldat||null,status:status,objekt_id:objId||null,einheit_id:einId||null,adresse:adresse||null,notizen:notizen||null,auftragsbestaetigung_betrag:abBetrag||null,auftragsbestaetigung_datum:abDatum||null,auftragsbestaetigung_pdf_name:abFileName||null};
-  var localRow=Object.assign({},dbRow,{ab_betrag:abBetrag,ab_datum:abDatum,ab_pdf_name:abFileName});
+  var angebId=document.getElementById('tkBestAngebId').value||null;
+  var dbRow={lieferant:lief,artikel:art,menge:menge,preis:preis,lieferdatum:ldat||null,status:status,objekt_id:objId||null,einheit_id:einId||null,adresse:adresse||null,notizen:notizen||null,auftragsbestaetigung_betrag:abBetrag||null,auftragsbestaetigung_datum:abDatum||null,auftragsbestaetigung_pdf_name:abFileName||null,angebot_id:angebId};
+  var localRow=Object.assign({},dbRow,{ab_betrag:abBetrag,ab_datum:abDatum,ab_pdf_name:abFileName,angebot_id:angebId});
 
   if(id){
     var b=TBEST.find(function(x){return x.id===id});
@@ -3421,7 +3497,7 @@ function tkLoadAll(){
   sb.from('technik_bestellungen').select('*').order('created_at',{ascending:false}).then(function(r){
     if(!r.error&&r.data){
       TBEST=r.data.map(function(row){
-        return {id:row.id,lieferant:row.lieferant||'',artikel:row.artikel||'',menge:row.menge||1,preis:row.preis||0,lieferdatum:row.lieferdatum||'',status:row.status||'neu',objekt_id:row.objekt_id||'',einheit_id:row.einheit_id||'',adresse:row.adresse||'',notizen:row.notizen||'',erstellt:row.created_at||'',ab_betrag:row.auftragsbestaetigung_betrag||0,ab_datum:row.auftragsbestaetigung_datum||'',ab_pdf_name:row.auftragsbestaetigung_pdf_name||''};
+        return {id:row.id,lieferant:row.lieferant||'',artikel:row.artikel||'',menge:row.menge||1,preis:row.preis||0,lieferdatum:row.lieferdatum||'',status:row.status||'neu',objekt_id:row.objekt_id||'',einheit_id:row.einheit_id||'',adresse:row.adresse||'',notizen:row.notizen||'',erstellt:row.created_at||'',ab_betrag:row.auftragsbestaetigung_betrag||0,ab_datum:row.auftragsbestaetigung_datum||'',ab_pdf_name:row.auftragsbestaetigung_pdf_name||'',angebot_id:row.angebot_id||''};
       });
       console.log('[TK] Loaded',TBEST.length,'Bestellungen');
       if(document.getElementById('p-technik-best').classList.contains('active'))tkRenderBest();
@@ -3751,6 +3827,11 @@ function tkAngeb2Best(angebId){
   document.getElementById('tkBestArt').value=a.titel||'';
   document.getElementById('tkBestPreis').value=a.betrag||'';
   var n=document.getElementById('tkBestNotiz');if(n)n.value='Aus Angebot: '+a.titel+(a.beschreibung?'\n'+a.beschreibung:'');
+  // Angebot-Verknüpfung setzen
+  document.getElementById('tkBestAngebId').value=angebId;
+  document.getElementById('tkBestAngebLabel').textContent=a.titel+' — '+tkEur(a.betrag);
+  document.getElementById('tkBestAngebDiff').innerHTML='';
+  document.getElementById('tkBestAngebInfo').style.display='block';
   ts('Angebot angenommen → Bestellung vorbereitet');
   // Kontext aktualisieren
   var tc=document.getElementById('evTechnikCont');if(tc)tc.innerHTML=tkEinheitTechnikHtml(_evCurId,_evCurOId);
@@ -3793,6 +3874,8 @@ tkLoadAll=function(){
         return {id:row.id,titel:row.titel||'',lieferant:row.lieferant||'',betrag:row.betrag||0,datum:row.datum||'',gueltig_bis:row.gueltig_bis||'',status:row.status||'offen',dateiname:row.dateiname||'',beschreibung:row.beschreibung||'',objekt_id:row.objekt_id||'',einheit_id:row.einheit_id||'',erstellt:row.created_at||''};
       });
       console.log('[TK] Loaded',TANGEB.length,'Angebote');
+      if(typeof tkUpdateWarnBadges==='function')tkUpdateWarnBadges();
+      if(document.getElementById('p-technik-ang')&&document.getElementById('p-technik-ang').classList.contains('active'))tkRenderAngeb();
     } else if(r.error){console.error('[TK] Angebote load error:',r.error.message);}
   });
 };
@@ -3802,9 +3885,118 @@ var _tkOrigGo=go;
 go=function(p){
   _tkOrigGo(p);
   if(p==='technik-kalk'){tkFillFilterSelects('tkKalkFilterObj');tkRenderKalk();}
+  if(p==='technik-ang'){tkFillFilterSelects('tkAngFilterObj');tkRenderAngeb();}
   if(p==='technik-best'){tkFillFilterSelects('tkBestFilterObj');tkRenderBest();}
   if(p==='technik-rech'){tkFillFilterSelects('tkRechFilterObj');tkRenderRech();}
 };
+
+/** Angebote-Seite rendern */
+function tkRenderAngeb(){
+  tkFillFilterSelects('tkAngFilterObj');
+  var filterSt=document.getElementById('tkAngFilterSt')?document.getElementById('tkAngFilterSt').value:'';
+  var filterObj=document.getElementById('tkAngFilterObj')?document.getElementById('tkAngFilterObj').value:'';
+  var search=(document.getElementById('tkAngSearch')?document.getElementById('tkAngSearch').value:'').toLowerCase();
+  var today=new Date(); today.setHours(0,0,0,0);
+
+  // Abgelaufen-Status automatisch erkennen
+  var list=TANGEB.map(function(a){
+    var a2=Object.assign({},a);
+    if(a2.status==='offen'&&a2.gueltig_bis){
+      var g=new Date(a2.gueltig_bis); g.setHours(0,0,0,0);
+      if(g<today) a2.status='abgelaufen';
+    }
+    return a2;
+  });
+
+  list=list.filter(function(a){
+    if(filterSt&&a.status!==filterSt)return false;
+    if(filterObj&&a.objekt_id!==filterObj)return false;
+    if(search&&(a.lieferant||'').toLowerCase().indexOf(search)<0&&(a.titel||'').toLowerCase().indexOf(search)<0)return false;
+    return true;
+  });
+
+  // KPIs
+  var offen=list.filter(function(a){return a.status==='offen'}).length;
+  var angenommen=list.filter(function(a){return a.status==='angenommen'}).length;
+  var abgelaufen=list.filter(function(a){return a.status==='abgelaufen'}).length;
+  var volumen=list.reduce(function(s,a){return s+(parseFloat(a.betrag)||0)},0);
+  var kpiH='';
+  kpiH+='<div class="kpi"><div class="kpi-l">Angebote</div><div class="kpi-v">'+list.length+'</div></div>';
+  kpiH+='<div class="kpi"><div class="kpi-l">Offen</div><div class="kpi-v" style="color:var(--gold)">'+offen+'</div></div>';
+  kpiH+='<div class="kpi"><div class="kpi-l">Angenommen</div><div class="kpi-v" style="color:var(--green)">'+angenommen+'</div></div>';
+  kpiH+='<div class="kpi"><div class="kpi-l">Abgelaufen</div><div class="kpi-v" style="color:var(--red)">'+abgelaufen+'</div></div>';
+  var kpiEl=document.getElementById('tkAngKPI');if(kpiEl)kpiEl.innerHTML=kpiH;
+
+  // Warnbox
+  var warns=[];
+  TANGEB.forEach(function(a){
+    if(a.status==='offen'&&a.gueltig_bis){
+      var g=new Date(a.gueltig_bis); g.setHours(0,0,0,0);
+      var diffDays=Math.round((g-today)/(1000*60*60*24));
+      if(diffDays<0) warns.push('⚠️ <strong>'+escHtml(a.titel)+'</strong> ist abgelaufen ('+a.gueltig_bis+')');
+      else if(diffDays<=7) warns.push('⏰ <strong>'+escHtml(a.titel)+'</strong> läuft in '+diffDays+' Tag(en) ab ('+a.gueltig_bis+')');
+    }
+  });
+  var wb=document.getElementById('tkAngWarnBox');
+  if(wb)wb.innerHTML=warns.length?'<div style="background:rgba(212,90,90,.08);border:1px solid rgba(212,90,90,.25);border-radius:8px;padding:10px 14px;font-size:11px;line-height:1.8">'+warns.join('<br>')+'</div>':'';
+
+  // Sidebar Badge
+  var nawEl=document.getElementById('navAngebWarn');if(nawEl)nawEl.style.display=(offen+abgelaufen)>0?'inline':'none';
+
+  // Tabelle
+  var h='';
+  list.forEach(function(a){
+    var bezug=tkObjLabel(a.objekt_id)+(a.einheit_id?(' / '+tkEinLabel(a.einheit_id)):'');
+    // Prüfe ob schon Bestellung verknüpft
+    var bestVerknuepft=TBEST.find(function(b){return b.angebot_id===a.id});
+    h+='<tr>';
+    h+='<td><strong>'+escHtml(a.titel||'–')+'</strong>'+(a.beschreibung?'<br><span style="font-size:10px;color:var(--text-dim)">'+escHtml(a.beschreibung)+'</span>':'')+'</td>';
+    h+='<td>'+escHtml(a.lieferant||'–')+'</td>';
+    h+='<td style="font-family:var(--mono)">'+tkEur(a.betrag)+'</td>';
+    h+='<td class="td-m">'+(a.datum||'–')+'</td>';
+    var guEl='';
+    if(a.gueltig_bis){
+      var g2=new Date(a.gueltig_bis); g2.setHours(0,0,0,0);
+      var d2=Math.round((g2-today)/(1000*60*60*24));
+      guEl=a.gueltig_bis+(d2<0?' <span style="color:var(--red);font-size:9px">abgelaufen</span>':d2<=7?' <span style="color:var(--gold);font-size:9px">'+d2+'d</span>':'');
+    } else guEl='–';
+    h+='<td class="td-m">'+guEl+'</td>';
+    h+='<td class="td-m">'+bezug+'</td>';
+    h+='<td>'+tkBadge(a.status,'angeb')+'</td>';
+    h+='<td style="white-space:nowrap">';
+    if(a.status==='offen') h+='<button class="btn btn-p" onclick="tkAngeb2Best(\''+a.id+'\')" style="padding:3px 8px;font-size:9px;margin-right:3px">→ Bestellen</button>';
+    if(bestVerknuepft) h+='<span style="font-size:9px;color:var(--green);display:block">✅ Bestellt</span>';
+    h+='<button class="btn btn-s" onclick="tkEditAngeb(\''+a.id+'\')" style="padding:3px 7px;font-size:10px">✎</button> ';
+    h+='<button class="btn btn-s" onclick="tkDelAngeb(\''+a.id+'\')" style="padding:3px 7px;font-size:10px;color:var(--red)">✕</button>';
+    h+='</td></tr>';
+  });
+  if(!h)h='<tr><td colspan="8" style="text-align:center;padding:28px;color:var(--text-dim)">Noch keine Angebote vorhanden</td></tr>';
+  var tb=document.getElementById('tkAngTB');if(tb)tb.innerHTML=h;
+}
+
+/** Globale Warnungen aktualisieren (nach Laden der Daten) */
+function tkUpdateWarnBadges(){
+  // Angebote-Warnungen
+  var today=new Date(); today.setHours(0,0,0,0);
+  var angWarn=TANGEB.filter(function(a){
+    if(a.status!=='offen')return false;
+    if(!a.gueltig_bis)return false;
+    var g=new Date(a.gueltig_bis); g.setHours(0,0,0,0);
+    return g<=new Date(today.getTime()+7*24*60*60*1000);
+  }).length;
+  var nawEl=document.getElementById('navAngebWarn');if(nawEl)nawEl.style.display=angWarn>0?'inline':'none';
+  // Bestellungen-Warnungen
+  var bestWarn=TBEST.filter(function(b){
+    var ang=b.angebot_id?TANGEB.find(function(a){return a.id===b.angebot_id}):null;
+    if(!ang)return false;
+    var ab=parseFloat(b.ab_betrag)||0;
+    return ab>0&&Math.abs(ab-(parseFloat(ang.betrag)||0))>0.01;
+  }).length;
+  var bwEl=document.getElementById('navBestWarn');if(bwEl)bwEl.style.display=bestWarn>0?'inline':'none';
+  // Rechnungen-Warnungen
+  var rechWarn=TRECH.filter(function(r){return r.pruef_ergebnis==='abweichung'||r.status==='abweichung'}).length;
+  var rwEl=document.getElementById('navRechWarn');if(rwEl)rwEl.style.display=rechWarn>0?'inline':'none';
+}
 
 // Technik-Daten nach Supabase-Login laden (wird nach initSB aufgerufen)
 // Wird automatisch getriggert wenn Supabase verbunden ist
@@ -3813,8 +4005,3 @@ setTimeout(function(){if(on&&sb)tkLoadAll()},2500);
 </script>
 </body>
 </html>
-
-<!-- test -->
-
-<!-- v2 -->
-<!-- test3 -->
