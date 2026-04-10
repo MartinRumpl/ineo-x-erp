@@ -1055,45 +1055,50 @@ function apPick(id){
 // === DEAL DETAIL ===
 function sDV(id){var d=null;for(var i=0;i<D.length;i++)if(D[i].id===id){d=D[i];break}if(!d)return;curDeal=d;document.getElementById('dLV').style.display='none';var v=document.getElementById('dDV');v.style.display='block';var c=d.kalk?calc(d.kalk):null;
 var h='<button class="bk" onclick="go(\'deals\');rDL()"><svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg> ZurÃ¼ck zur Liste</button>';
+// Header
 h+='<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px"><div><div style="font-size:22px;font-weight:700">'+(d.nr||'')+' â '+d.adresse+'</div><div style="font-size:12px;color:var(--text-muted);margin-top:4px">'+(d.ansprechpartner||'-')+' | '+(d.quelle||'-');
 if(d.feedback)h+=' | Feedback: <span style="color:var(--gold)">'+d.feedback+'</span>';
 h+='</div></div><div style="display:flex;gap:8px;align-items:center">';
-// Status Dropdown
 h+='<select onchange="changeStatus(\''+d.id+'\',this.value)" style="background:var(--bg);border:1px solid var(--card-border);border-radius:7px;padding:6px 10px;color:var(--gold);font-family:Montserrat,sans-serif;font-size:11px;font-weight:600;cursor:pointer;outline:none">';
 for(var si=0;si<stOpts.length;si++){h+='<option value="'+stOpts[si]+'"'+(d.status===stOpts[si]?' selected':'')+'>'+stNames[stOpts[si]]+'</option>'}
 h+='</select>';
 if(d.status!=='gekauft'&&d.status!=='abgelehnt'){h+='<button class="btn btn-p" onclick="dealKaufen(\''+d.id+'\')"><svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/></svg>Ankauf Ã¼bernehmen</button><button class="btn btn-s" style="color:var(--red);border-color:rgba(212,90,90,.3)" onclick="dealAblehnen(\''+d.id+'\')">Ablehnen</button>'}
-// Bearbeiten-Button immer anzeigen
 h+='<button class="btn btn-s" onclick="editDeal(\''+d.id+'\')" style="display:inline-flex;align-items:center;gap:5px"><svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Bearbeiten</button>';
 h+='</div></div>';
-// Stammdaten
-h+='<div class="fsec"><svg viewBox="0 0 24 24"><path d="M3 21V9l9-6 9 6v12H3z"/></svg>Stammdaten</div>';
-h+='<div class="fgrid">';
-h+='<div class="fg"><label>Nr.</label><div style="font-size:13px;font-weight:600;color:var(--gold)">'+(d.nr||'-')+'</div></div>';
-h+='<div class="fg"><label>Adresse</label><div style="font-size:13px">'+d.adresse+'</div></div>';
-h+='<div class="fg"><label>Quadratmeter</label><div style="font-size:13px">'+(d.qm||'-')+'</div></div>';
-h+='<div class="fg"><label>Kaufpreis</label><div style="font-size:14px;font-weight:700;color:var(--gold)">'+eI(d.preis)+'</div></div>';
+// === KACHEL-REIHE 1: KPI + Stammdaten ===
 var _kAP=null;if(d.ansprechpartner){for(var _ki=0;_ki<K.length;_ki++)if(K[_ki].name===d.ansprechpartner){_kAP=K[_ki];break}}
-var _apHtml='-';if(d.ansprechpartner){_apHtml='<div style="font-size:13px">'+d.ansprechpartner+(_kAP&&_kAP.suchname?' <span style="color:var(--gold);font-size:11px">('+_kAP.suchname+')</span>':'')+'</div>';if(_kAP){if(_kAP.telefon)_apHtml+='<div style="font-size:11px;margin-top:3px">ð <a href="tel:'+_kAP.telefon+'" class="link-a">'+_kAP.telefon+'</a></div>';if(_kAP.email)_apHtml+='<div style="font-size:11px;margin-top:2px">â <a href="mailto:'+_kAP.email+'" class="link-a">'+_kAP.email+'</a></div>';}}
-h+='<div class="fg"><label>Ansprechpartner</label>'+_apHtml+'</div>';
-h+='<div class="fg"><label>Feedback Makler</label><div style="font-size:13px">'+(d.feedback||'-')+'</div></div>';
-if(d.link)h+='<div class="fg"><label>Link Anzeige</label><a href="'+d.link+'" target="_blank" class="link-a">'+d.link.substring(0,50)+(d.link.length>50?'â¦':'')+'</a></div>';
-if(d.wo_link){var _wn=quelleName(d.wo_link);h+='<div class="fg"><label>Wo gefunden</label><a href="'+d.wo_link+'" target="_blank" class="link-a" style="font-weight:600">'+_wn+'</a></div>';}
-h+='<div class="fg" style="grid-column:1/-1"><label>Notizen / Zusatz</label><div style="font-size:12px;color:var(--text-muted)">'+(d.notizen||'Keine')+'</div></div>';
-h+='</div>';
-// Kalkulation - vollstÃ¤ndig editierbar
+h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">';
+// KACHEL: KPI
+h+='<div class="panel" style="padding:0;overflow:hidden">';
+h+='<div style="padding:11px 16px;border-bottom:1px solid var(--card-border);font-size:10px;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:1.5px;display:flex;align-items:center;gap:7px"><svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2"><rect x="2" y="3" width="20" height="18" rx="2"/><path d="M2 9h20"/></svg>Kalkulation</div>';
+h+='<div style="display:grid;grid-template-columns:1fr 1fr">';
+h+='<div style="padding:16px 18px;border-right:1px solid var(--card-border);border-bottom:1px solid var(--card-border)"><div style="font-size:9px;font-weight:700;color:var(--text-dim);text-transform:uppercase;margin-bottom:5px">Cashflow/Monat</div><div style="font-family:var(--mono);font-size:22px;font-weight:700;color:'+(c&&c.cf>=0?'var(--green)':'var(--red)')+'" id="kCF">'+(c?eu(c.cf):'â')+'</div></div>';
+h+='<div style="padding:16px 18px;border-bottom:1px solid var(--card-border)"><div style="font-size:9px;font-weight:700;color:var(--text-dim);text-transform:uppercase;margin-bottom:5px">Rendite</div><div style="font-family:var(--mono);font-size:22px;font-weight:700;color:var(--blue)" id="kRD">'+(c?pc(c.br):'â')+'</div></div>';
+h+='<div style="padding:16px 18px;border-right:1px solid var(--card-border)"><div style="font-size:9px;font-weight:700;color:var(--text-dim);text-transform:uppercase;margin-bottom:5px">Gesamtinvest</div><div style="font-family:var(--mono);font-size:18px;font-weight:700" id="kGI">'+(c?eI(c.gi):'â')+'</div></div>';
+h+='<div style="padding:16px 18px"><div style="font-size:9px;font-weight:700;color:var(--text-dim);text-transform:uppercase;margin-bottom:5px">Eigenmittel</div><div style="font-family:var(--mono);font-size:18px;font-weight:700" id="kEM">'+(c?eI(c.em):'â')+'</div></div>';
+h+='</div></div>';
+// KACHEL: Stammdaten
+h+='<div class="panel" style="padding:0;overflow:hidden">';
+h+='<div style="padding:11px 16px;border-bottom:1px solid var(--card-border);font-size:10px;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:1.5px;display:flex;align-items:center;gap:7px"><svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2"><path d="M3 21V9l9-6 9 6v12H3z"/></svg>Stammdaten</div>';
+h+='<div style="padding:16px 18px">';
+h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px 18px">';
+h+='<div><div style="font-size:9px;font-weight:700;color:var(--text-dim);text-transform:uppercase;margin-bottom:4px">Kaufpreis</div><div style="font-size:17px;font-weight:700;color:var(--gold)">'+eI(d.preis)+'</div></div>';
+h+='<div><div style="font-size:9px;font-weight:700;color:var(--text-dim);text-transform:uppercase;margin-bottom:4px">FlÃ¤che / Preis mÂ²</div><div style="font-size:17px;font-weight:700">'+(d.qm||'â')+' mÂ²</div><div style="font-size:11px;color:var(--text-dim)">'+(c?eu(c.pm)+'/mÂ²":'')+'</div></div>';
+h+='<div><div style="font-size:9px;font-weight:700;color:var(--text-dim);text-transform:uppercase;margin-bottom:4px">Adresse</div><div style="font-size:12px">'+d.adresse+'</div></div>';
+if(d.ansprechpartner){h+='<div><div style="font-size:9px;font-weight:700;color:var(--text-dim);text-transform:uppercase;margin-bottom:4px">Ansprechpartner</div><div style="font-size:12px">'+d.ansprechpartner+'</div>';if(_kAP&&_kAP.telefon)h+='<div style="font-size:11px;margin-top:2px">ð <a href="tel:'+_kAP.telefon+'" class="link-a">'+_kAP.telefon+'</a></div>';if(_kAP&&_kAP.email)h+='<div style="font-size:11px">â <a href="mailto:'+_kAP.email+'" class="link-a">'+_kAP.email+'</a></div>';h+='</div>';}
+if(d.feedback)h+='<div><div style="font-size:9px;font-weight:700;color:var(--text-dim);text-transform:uppercase;margin-bottom:4px">Feedback</div><div style="font-size:12px;color:var(--gold)">'+d.feedback+'</div></div>';
+if(d.notizen)h+='<div style="grid-column:1/-1"><div style="font-size:9px;font-weight:700;color:var(--text-dim);text-transform:uppercase;margin-bottom:4px">Notizen</div><div style="font-size:11px;color:var(--text-muted)">'+d.notizen+'</div></div>';
+if(d.link)h+='<div style="grid-column:1/-1"><a href="'+d.link+'" target="_blank" class="link-a" style="font-size:11px;display:inline-flex;align-items:center;gap:5px"><svg viewBox="0 0 24 24" style="width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Inserat Ã¶ffnen</a></div>';
+h+='</div></div></div>';
+h+='</div>'; // close kachel-reihe 1
+// === KACHEL: Kalkulation (aufklappbar) ===
 var k=d.kalk||{wohnflaeche:d.qm||0,kaufpreis:d.preis||0,kaltmiete_m2:10,invest:0,prov_makler:3,prov_notar:1.5,prov_grundbuch:1.1,prov_grest:3.5,prov_grundbuch_kredit:1.2,makler:true,zinssatz:3.25,laufzeit:30,fin_kp:98,fin_inv:100,fin_nk:0,bk_umlegbar:0,heizkosten:0,kredit_laufend:0,bk_nu:0,bk_nuf:0};
-h+='<div class="fsec" style="margin-top:20px;cursor:pointer" onclick="var el=document.getElementById(\'kalkBody\');el.style.display=el.style.display===\'none\'?\'block\':\'none\'"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="18" rx="2"/><path d="M2 9h20"/></svg>Kalkulation â¾</div>';
-// KPI Cards
-if(c){
-h+='<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;margin-bottom:16px">';
-h+='<div class="panel" style="padding:14px;text-align:center"><div style="font-size:9px;font-weight:700;color:var(--text-dim);text-transform:uppercase;margin-bottom:4px">Cashflow/Mt</div><div style="font-family:var(--mono);font-size:20px;font-weight:700;color:'+(c.cf>=0?'var(--green)':'var(--red)')+'" id="kCF">'+eu(c.cf)+'</div></div>';
-h+='<div class="panel" style="padding:14px;text-align:center"><div style="font-size:9px;font-weight:700;color:var(--text-dim);text-transform:uppercase;margin-bottom:4px">Rendite</div><div style="font-family:var(--mono);font-size:20px;font-weight:700;color:var(--blue)" id="kRD">'+pc(c.br)+'</div></div>';
-h+='<div class="panel" style="padding:14px;text-align:center"><div style="font-size:9px;font-weight:700;color:var(--text-dim);text-transform:uppercase;margin-bottom:4px">Gesamtinvest</div><div style="font-family:var(--mono);font-size:20px;font-weight:700" id="kGI">'+eI(c.gi)+'</div></div>';
-h+='<div class="panel" style="padding:14px;text-align:center"><div style="font-size:9px;font-weight:700;color:var(--text-dim);text-transform:uppercase;margin-bottom:4px">Eigenmittel</div><div style="font-family:var(--mono);font-size:20px;font-weight:700" id="kEM">'+eI(c.em)+'</div></div>';
+h+='<div class="panel" style="padding:0;margin-bottom:16px;overflow:hidden">';
+h+='<div style="padding:11px 16px;border-bottom:1px solid var(--card-border);display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="var el=document.getElementById(\'kalkBody\');el.style.display=el.style.display===\'none\'?\'block\':\'none\'">';
+h+='<div style="font-size:10px;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:1.5px;display:flex;align-items:center;gap:7px"><svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2"><rect x="2" y="3" width="20" height="18" rx="2"/><path d="M2 9h20"/></svg>Kalkulation bearbeiten</div>';
+h+='<span style="font-size:16px;color:var(--text-dim)">â¾</span>';
 h+='</div>';
-}
-h+='<div id="kalkBody">';
+h+='<div id="kalkBody" style="display:none;padding:18px">';
 // Inputs
 function ki(id,val,u,w){return'<div class="k-field"><input type="number" class="k-input" id="'+id+'" value="'+(val||0)+'" step="any" onchange="recalcLive(\''+d.id+'\')"'+(w?' style="width:'+w+'"':'')+'><span class="k-unit">'+u+'</span></div>'}
 function kr(l,inp){return'<div class="k-row"><span class="k-label">'+l+'</span>'+inp+'</div>'}
@@ -1155,7 +1160,7 @@ h+='<div class="k-rr"><span>Eigenmittel</span><span class="k-rv" id="kEMR">'+(c?
 h+='<div class="k-rr"><span>EK-Anteil</span><span class="k-rv blue" id="kEKA">'+(c?pc(c.gi>0?c.em/c.gi:0):'â')+'</span></div>';
 h+='</div>';
 h+='<div class="k-result"><div class="k-rt">Cashflow</div>';
-h+='<div class="k-rr"><span>Nettokaltmiete</span><span class="k-rv" id="kNM">'+(c?eu(c.nt):'â')+'</span></div>';
+h+='<div class="k-ri"><span>Nettokaltmiete</span><span class="k-rv" id="kNM">'+(c?eu(c.nt):'â')+'</span></div>';
 h+='<div class="k-rr"><span>â BK n.u.</span><span class="k-rv" id="kBNR">â '+(k.bk_nu||0)+' â¬</span></div>';
 h+='<div class="k-rr"><span>â Lauf. Kredit</span><span class="k-rv">â '+(k.kredit_laufend||0)+' â¬</span></div>';
 h+='<div class="k-rr"><span>â Kreditrate</span><span class="k-rv" id="kRTR">â '+(c?eu(c.rt):'0')+' </span></div>';
@@ -1167,11 +1172,14 @@ h+='<div id="y20" style="display:none"><div id="y20Table"></div></div>';
 h+='<div class="k-result" style="cursor:pointer" onclick="var el=document.getElementById(\'tilg\');el.style.display=el.style.display===\'none\'?\'block\':\'none\'"><div class="k-rt">Tilgungsplan â¾</div></div>';
 h+='<div id="tilg" style="display:none"><div id="tilgTable"></div></div>';
 h+='</div></div>';
-h+='</div>';
+h+='</div>'; // close kalkBody
+h+='</div>'; // close kalkulation panel tile
 // recalc nach Render
 setTimeout(function(){recalcLive(d.id);gen20();genTilg()},100);
-// Dokumente - Container fuer async laden
-h+='<div class="fsec" style="margin-top:20px"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Verbundene Dokumente <span id="docCount" style="font-size:10px;color:var(--text-dim);font-weight:400;margin-left:6px"></span><span style="margin-left:auto"><button class="btn btn-s" style="font-size:10px;padding:5px 10px" onclick="openDocM(\''+d.id+'\')">+ Dokument</button></span></div>';
+// === KACHEL: Dokumente ===
+h+='<div class="panel" style="padding:0;overflow:hidden">';
+h+='<div style="padding:11px 16px;border-bottom:1px solid var(--card-border);display:flex;justify-content:space-between;align-items:center"><div style="font-size:10px;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:1.5px;display:flex;align-items:center;gap:7px"><svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Dokumente <span id="docCount" style="font-size:10px;color:var(--text-dim);font-weight:400;margin-left:4px"></span></div><button class="btn btn-s" style="font-size:10px;padding:5px 10px" onclick="openDocM(\''+d.id+'\')">+ Dokument</button></div>';
+h+='<div style="padding:18px">';
 h+='<div id="docFolder"></div>';
 h+='<div class="dropzone" id="dropZone" onclick="document.getElementById(\'fileIn\').click()" ondragenter="dzEnter(event)" ondragover="dzOver(event)" ondragleave="dzLeave(event)" ondrop="dzDrop(event,\''+d.id+'\')">';
 h+='<div class="dz-icon"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>';
@@ -1180,7 +1188,8 @@ h+='<div class="dz-sub">PDF, JPG, PNG, DOCX, XLSX, EML, MSG</div>';
 h+='<div class="dz-prog" id="dzProg" style="display:none"><div class="dz-bar"><div class="dz-fill" id="dzFill"></div></div><div style="font-size:10px;color:var(--text-muted)" id="dzStatus"></div></div>';
 h+='</div>';
 h+='<input type="file" id="fileIn" multiple accept=".pdf,.jpg,.jpeg,.png,.docx,.xlsx,.eml,.msg" style="display:none" onchange="filesPicked(this.files,\''+d.id+'\')">';
-h+='<div id="docList" class="panel"><div style="padding:18px;font-size:12px;color:var(--text-dim)">Lade Dokumente ...</div></div>';
+h+='<div id="docList"><div style="padding:18px 0;font-size:12px;color:var(--text-dim)">Lade Dokumente ...</div></div>';
+h+='</div></div>'; // close docs padding + panel tile
 v.innerHTML=h;
 // Docs async laden
 loadDealDocs(d.id,d.nr,d.adresse)}
@@ -2144,7 +2153,7 @@ function resetCalendarFilters(){['calSearch','calUserFilter','calTypeFilter'].fo
 function updateViewButtons(){var root=document.getElementById('calViewSwitch');if(!root)return;Array.prototype.forEach.call(root.querySelectorAll('button'),function(btn){btn.classList.toggle('on',btn.getAttribute('data-view')===currentCalView)})}
 function setCalView(view){currentCalView=view;if(calendar){calendar.changeView(view);currentRangeText();updateViewButtons();renderUpcoming()}}
 function saveCalendarState(){try{localStorage.setItem('erp_tm_events_v2',JSON.stringify(TM));localStorage.setItem('erp_calendar_outlook_cfg',JSON.stringify(outlookCfg))}catch(e){}}
-function loadCalendarState(){try{var tm=localStorage.getItem('erp_tm_events_v2');if(tm){TM=JSON.parse(tm)}var oc=localStorage.getItem('erp_calendar_outlook_cfg');if(oc){var parsed=JSON.parse(oc);for(var k in parsed)outlookCfg[k]=parsed[k]}}catch(e){}normalizeAllTM()}
+function loadCalendarState(){try{var tm=localStorage.getItem('erp_tm_events_v2');if(tm){TM=JSON.parse(tm)}var oc=localStorage.getItem('erp_calendar_outlook_cfg');if(oc){var parsed=JSON.parse(oc);for(var k in parsed)outlookCfg[k]=parsed[k]}}catch(e){}outlookCfg.syncRunning=false;normalizeAllTM()}
 function updateOutlookBadge(){var badge=document.getElementById('outlookStatusBadge'),status=document.getElementById('outlookStatusText'),last=document.getElementById('outlookLastSync'),note=document.querySelector('.cal-outlook-note');if(badge)badge.textContent=outlookCfg.connected?'Verbunden':'Nicht verbunden';if(status)status.textContent=outlookCfg.connected?(outlookCfg.accountName?('Angemeldet als '+outlookCfg.accountName):'Bereit fÃ¼r Sync'):'Nicht angemeldet';if(last)last.textContent=outlookCfg.lastSync||'â';if(note)note.textContent=(window.location.protocol==='file:'?'Zum Outlook-Login muss diese HTML Ã¼ber http://localhost geÃ¶ffnet werden. ':'')+'Microsoft Graph ist mit deiner Client-ID und Tenant-ID konfiguriert.'}
 function seedOutlookDemo(){var samples=[{id:'outlook-'+Date.now(),titel:'Outlook Jour fixe',datum:toYmd(addDays(new Date(),2)),zeit:'08:30',ende:'09:00',ort:'Microsoft Teams',kategorie:'Outlook Termin',farbe:CAL_COLORS['Outlook Termin'],benutzer:getCurrentUserName(),quelle:'outlook',outlook_id:'demo-1'},{id:'outlook-'+(Date.now()+1),titel:'Outlook Besichtigung',datum:toYmd(addDays(new Date(),4)),zeit:'13:00',ende:'14:00',ort:'Wien',kategorie:'Outlook Termin',farbe:CAL_COLORS['Outlook Termin'],benutzer:getCurrentUserName(),quelle:'outlook',outlook_id:'demo-2'}];samples.forEach(function(s){TM.push(normalizeTMItem(s))});outlookCfg.connected=true;outlookCfg.lastSync=new Date().toLocaleString('de-AT');saveCalendarState();populateCalendarFilters();applyCalendarFilters();updateOutlookBadge();ts('Outlook-Demotermine geladen')}
 function clearOutlookSession(){outlookCfg.connected=false;outlookCfg.accessToken='';outlookCfg.accountName='';saveCalendarState();updateOutlookBadge()}
