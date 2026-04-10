@@ -1054,15 +1054,15 @@ function apPick(id){
 
 // === DEAL DETAIL ===
 function sDV(id){var d=null;for(var i=0;i<D.length;i++)if(D[i].id===id){d=D[i];break}if(!d)return;curDeal=d;document.getElementById('dLV').style.display='none';var v=document.getElementById('dDV');v.style.display='block';var c=d.kalk?calc(d.kalk):null;
-var h='<button class="bk" onclick="go(\'deals\');rDL()"><svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg> ZurÃ¼ck zur Liste</button>';
+var h='<button class="bk" onclick="go(\'deals\');rDL()"><svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg> Zurück zur Liste</button>';
 // Header
-h+='<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px"><div><div style="font-size:22px;font-weight:700">'+(d.nr||'')+' â '+d.adresse+'</div><div style="font-size:12px;color:var(--text-muted);margin-top:4px">'+(d.ansprechpartner||'-')+' | '+(d.quelle||'-');
+h+='<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px"><div><div style="font-size:22px;font-weight:700">'+(d.nr||'')+' — '+d.adresse+'</div><div style="font-size:12px;color:var(--text-muted);margin-top:4px">'+(d.ansprechpartner||'-')+' | '+(d.quelle||'-');
 if(d.feedback)h+=' | Feedback: <span style="color:var(--gold)">'+d.feedback+'</span>';
 h+='</div></div><div style="display:flex;gap:8px;align-items:center">';
 h+='<select onchange="changeStatus(\''+d.id+'\',this.value)" style="background:var(--bg);border:1px solid var(--card-border);border-radius:7px;padding:6px 10px;color:var(--gold);font-family:Montserrat,sans-serif;font-size:11px;font-weight:600;cursor:pointer;outline:none">';
 for(var si=0;si<stOpts.length;si++){h+='<option value="'+stOpts[si]+'"'+(d.status===stOpts[si]?' selected':'')+'>'+stNames[stOpts[si]]+'</option>'}
 h+='</select>';
-if(d.status!=='gekauft'&&d.status!=='abgelehnt'){h+='<button class="btn btn-p" onclick="dealKaufen(\''+d.id+'\')"><svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/></svg>Ankauf Ã¼bernehmen</button><button class="btn btn-s" style="color:var(--red);border-color:rgba(212,90,90,.3)" onclick="dealAblehnen(\''+d.id+'\')">Ablehnen</button>'}
+if(d.status!=='gekauft'&&d.status!=='abgelehnt'){h+='<button class="btn btn-p" onclick="dealKaufen(\''+d.id+'\')"><svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/></svg>Ankauf übernehmen</button><button class="btn btn-s" style="color:var(--red);border-color:rgba(212,90,90,.3)" onclick="dealAblehnen(\''+d.id+'\')">Ablehnen</button>'}
 h+='<button class="btn btn-s" onclick="editDeal(\''+d.id+'\')" style="display:inline-flex;align-items:center;gap:5px"><svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Bearbeiten</button>';
 h+='</div></div>';
 // === KACHEL-REIHE 1: KPI + Stammdaten ===
@@ -1072,10 +1072,10 @@ h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-botto
 h+='<div class="panel" style="padding:0;overflow:hidden">';
 h+='<div style="padding:11px 16px;border-bottom:1px solid var(--card-border);font-size:10px;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:1.5px;display:flex;align-items:center;gap:7px"><svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2"><rect x="2" y="3" width="20" height="18" rx="2"/><path d="M2 9h20"/></svg>Kalkulation</div>';
 h+='<div style="display:grid;grid-template-columns:1fr 1fr">';
-h+='<div style="padding:16px 18px;border-right:1px solid var(--card-border);border-bottom:1px solid var(--card-border)"><div style="font-size:9px;font-weight:700;color:var(--text-dim);text-transform:uppercase;margin-bottom:5px">Cashflow/Monat</div><div style="font-family:var(--mono);font-size:22px;font-weight:700;color:'+(c&&c.cf>=0?'var(--green)':'var(--red)')+'" id="kCF">'+(c?eu(c.cf):'â')+'</div></div>';
-h+='<div style="padding:16px 18px;border-bottom:1px solid var(--card-border)"><div style="font-size:9px;font-weight:700;color:var(--text-dim);text-transform:uppercase;margin-bottom:5px">Rendite</div><div style="font-family:var(--mono);font-size:22px;font-weight:700;color:var(--blue)" id="kRD">'+(c?pc(c.br):'â')+'</div></div>';
-h+='<div style="padding:16px 18px;border-right:1px solid var(--card-border)"><div style="font-size:9px;font-weight:700;color:var(--text-dim);text-transform:uppercase;margin-bottom:5px">Gesamtinvest</div><div style="font-family:var(--mono);font-size:18px;font-weight:700" id="kGI">'+(c?eI(c.gi):'â')+'</div></div>';
-h+='<div style="padding:16px 18px"><div style="font-size:9px;font-weight:700;color:var(--text-dim);text-transform:uppercase;margin-bottom:5px">Eigenmittel</div><div style="font-family:var(--mono);font-size:18px;font-weight:700" id="kEM">'+(c?eI(c.em):'â')+'</div></div>';
+h+='<div style="padding:16px 18px;border-right:1px solid var(--card-border);border-bottom:1px solid var(--card-border)"><div style="font-size:9px;font-weight:700;color:var(--text-dim);text-transform:uppercase;margin-bottom:5px">Cashflow/Monat</div><div style="font-family:var(--mono);font-size:22px;font-weight:700;color:'+(c&&c.cf>=0?'var(--green)':'var(--red)')+'" id="kCF">'+(c?eu(c.cf):'–')+'</div></div>';
+h+='<div style="padding:16px 18px;border-bottom:1px solid var(--card-border)"><div style="font-size:9px;font-weight:700;color:var(--text-dim);text-transform:uppercase;margin-bottom:5px">Rendite</div><div style="font-family:var(--mono);font-size:22px;font-weight:700;color:var(--blue)" id="kRD">'+(c?pc(c.br):'–')+'</div></div>';
+h+='<div style="padding:16px 18px;border-right:1px solid var(--card-border)"><div style="font-size:9px;font-weight:700;color:var(--text-dim);text-transform:uppercase;margin-bottom:5px">Gesamtinvest</div><div style="font-family:var(--mono);font-size:18px;font-weight:700" id="kGI">'+(c?eI(c.gi):'–')+'</div></div>';
+h+='<div style="padding:16px 18px"><div style="font-size:9px;font-weight:700;color:var(--text-dim);text-transform:uppercase;margin-bottom:5px">Eigenmittel</div><div style="font-family:var(--mono);font-size:18px;font-weight:700" id="kEM">'+(c?eI(c.em):'–')+'</div></div>';
 h+='</div></div>';
 // KACHEL: Stammdaten
 h+='<div class="panel" style="padding:0;overflow:hidden">';
@@ -1083,12 +1083,12 @@ h+='<div style="padding:11px 16px;border-bottom:1px solid var(--card-border);fon
 h+='<div style="padding:16px 18px">';
 h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px 18px">';
 h+='<div><div style="font-size:9px;font-weight:700;color:var(--text-dim);text-transform:uppercase;margin-bottom:4px">Kaufpreis</div><div style="font-size:17px;font-weight:700;color:var(--gold)">'+eI(d.preis)+'</div></div>';
-h+='<div><div style="font-size:9px;font-weight:700;color:var(--text-dim);text-transform:uppercase;margin-bottom:4px">FlÃ¤che / Preis mÂ²</div><div style="font-size:17px;font-weight:700">'+(d.qm||'â')+' mÂ²</div><div style="font-size:11px;color:var(--text-dim)">'+(c?eu(c.pm)+'/mÂ²":'')+'</div></div>';
+h+='<div><div style="font-size:9px;font-weight:700;color:var(--text-dim);text-transform:uppercase;margin-bottom:4px">Fläche / Preis m²</div><div style="font-size:17px;font-weight:700">'+(d.qm||'–')+' m²</div><div style="font-size:11px;color:var(--text-dim)">'+(c?eu(c.pm)+'/m²":'')+'</div></div>';
 h+='<div><div style="font-size:9px;font-weight:700;color:var(--text-dim);text-transform:uppercase;margin-bottom:4px">Adresse</div><div style="font-size:12px">'+d.adresse+'</div></div>';
-if(d.ansprechpartner){h+='<div><div style="font-size:9px;font-weight:700;color:var(--text-dim);text-transform:uppercase;margin-bottom:4px">Ansprechpartner</div><div style="font-size:12px">'+d.ansprechpartner+'</div>';if(_kAP&&_kAP.telefon)h+='<div style="font-size:11px;margin-top:2px">ð <a href="tel:'+_kAP.telefon+'" class="link-a">'+_kAP.telefon+'</a></div>';if(_kAP&&_kAP.email)h+='<div style="font-size:11px">â <a href="mailto:'+_kAP.email+'" class="link-a">'+_kAP.email+'</a></div>';h+='</div>';}
+if(d.ansprechpartner){h+='<div><div style="font-size:9px;font-weight:700;color:var(--text-dim);text-transform:uppercase;margin-bottom:4px">Ansprechpartner</div><div style="font-size:12px">'+d.ansprechpartner+'</div>';if(_kAP&&_kAP.telefon)h+='<div style="font-size:11px;margin-top:2px">📞 <a href="tel:'+_kAP.telefon+'" class="link-a">'+_kAP.telefon+'</a></div>';if(_kAP&&_kAP.email)h+='<div style="font-size:11px">✉ <a href="mailto:'+_kAP.email+'" class="link-a">'+_kAP.email+'</a></div>';h+='</div>';}
 if(d.feedback)h+='<div><div style="font-size:9px;font-weight:700;color:var(--text-dim);text-transform:uppercase;margin-bottom:4px">Feedback</div><div style="font-size:12px;color:var(--gold)">'+d.feedback+'</div></div>';
 if(d.notizen)h+='<div style="grid-column:1/-1"><div style="font-size:9px;font-weight:700;color:var(--text-dim);text-transform:uppercase;margin-bottom:4px">Notizen</div><div style="font-size:11px;color:var(--text-muted)">'+d.notizen+'</div></div>';
-if(d.link)h+='<div style="grid-column:1/-1"><a href="'+d.link+'" target="_blank" class="link-a" style="font-size:11px;display:inline-flex;align-items:center;gap:5px"><svg viewBox="0 0 24 24" style="width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Inserat Ã¶ffnen</a></div>';
+if(d.link)h+='<div style="grid-column:1/-1"><a href="'+d.link+'" target="_blank" class="link-a" style="font-size:11px;display:inline-flex;align-items:center;gap:5px"><svg viewBox="0 0 24 24" style="width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Inserat öffnen</a></div>';
 h+='</div></div></div>';
 h+='</div>'; // close kachel-reihe 1
 // === KACHEL: Kalkulation (aufklappbar) ===
@@ -1096,7 +1096,7 @@ var k=d.kalk||{wohnflaeche:d.qm||0,kaufpreis:d.preis||0,kaltmiete_m2:10,invest:0
 h+='<div class="panel" style="padding:0;margin-bottom:16px;overflow:hidden">';
 h+='<div style="padding:11px 16px;border-bottom:1px solid var(--card-border);display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="var el=document.getElementById(\'kalkBody\');el.style.display=el.style.display===\'none\'?\'block\':\'none\'">';
 h+='<div style="font-size:10px;font-weight:700;color:var(--text-dim);text-transform:uppercase;letter-spacing:1.5px;display:flex;align-items:center;gap:7px"><svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2"><rect x="2" y="3" width="20" height="18" rx="2"/><path d="M2 9h20"/></svg>Kalkulation bearbeiten</div>';
-h+='<span style="font-size:16px;color:var(--text-dim)">â¾</span>';
+h+='<span style="font-size:16px;color:var(--text-dim)">▾</span>';
 h+='</div>';
 h+='<div id="kalkBody" style="display:none;padding:18px">';
 // Inputs
@@ -1105,44 +1105,44 @@ function kr(l,inp){return'<div class="k-row"><span class="k-label">'+l+'</span>'
 h+='<div class="k-grid"><div>';
 // Basis
 h+='<div class="k-card"><div class="k-head">Objekt / Basis</div>';
-h+=kr('WohnflÃ¤che',ki('kW',k.wohnflaeche,'mÂ²'));
-h+=kr('Kaufpreis',ki('kK',k.kaufpreis,'â¬'));
-h+=kr('Kaltmiete / mÂ²',ki('kM',k.kaltmiete_m2,'â¬'));
-h+=kr('Invest (Sanierung)',ki('kI',k.invest,'â¬'));
-if(c)h+='<div class="k-row"><span class="k-label bold">Preis / mÂ²</span><span class="k-cv" id="kPM">'+eu(c.pm)+'</span></div>';
+h+=kr('Wohnfläche',ki('kW',k.wohnflaeche,'m²'));
+h+=kr('Kaufpreis',ki('kK',k.kaufpreis,'€'));
+h+=kr('Kaltmiete / m²',ki('kM',k.kaltmiete_m2,'€'));
+h+=kr('Invest (Sanierung)',ki('kI',k.invest,'€'));
+if(c)h+='<div class="k-row"><span class="k-label bold">Preis / m²</span><span class="k-cv" id="kPM">'+eu(c.pm)+'</span></div>';
 h+='</div>';
 // Nebenkosten mit Makler Toggle
-h+='<div class="k-card"><div class="k-head" style="display:flex;justify-content:space-between;align-items:center">Nebenkosten'+(c?' Â· <span id="kNK">'+eu(c.nk)+'</span>':'')+'<label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:11px;font-weight:600;color:var(--text-muted);text-transform:none;letter-spacing:0"><span>Makler</span><input type="checkbox" id="kMakler"'+(k.makler!==false?' checked':'')+' onchange="recalcLive(\''+d.id+'\')" style="width:14px;height:14px;accent-color:var(--gold);cursor:pointer"><span id="kMaklerSt" style="font-family:var(--mono);font-size:10px;color:'+(k.makler!==false?'var(--green)':'var(--text-dim)')+'">'+(k.makler!==false?'AN':'AUS')+'</span></label></div>';
+h+='<div class="k-card"><div class="k-head" style="display:flex;justify-content:space-between;align-items:center">Nebenkosten'+(c?' · <span id="kNK">'+eu(c.nk)+'</span>':'')+'<label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:11px;font-weight:600;color:var(--text-muted);text-transform:none;letter-spacing:0"><span>Makler</span><input type="checkbox" id="kMakler"'+(k.makler!==false?' checked':'')+' onchange="recalcLive(\''+d.id+'\')" style="width:14px;height:14px;accent-color:var(--gold);cursor:pointer"><span id="kMaklerSt" style="font-family:var(--mono);font-size:10px;color:'+(k.makler!==false?'var(--green)':'var(--text-dim)')+'">'+(k.makler!==false?'AN':'AUS')+'</span></label></div>';
 h+=kr('Makler',ki('kPMa',k.prov_makler,'%'));
 h+=kr('Notar',ki('kPN',k.prov_notar,'%'));
 h+=kr('Grundbuch',ki('kPG',k.prov_grundbuch,'%'));
 h+=kr('Grunderwerbsteuer',ki('kPGr',k.prov_grest,'%'));
 h+=kr('Grundb. Kredit',ki('kPGK',k.prov_grundbuch_kredit,'%'));
 h+='</div>';
-// Finanzierung â wie Vorlage: â¬ + % pro Zeile
+// Finanzierung – wie Vorlage: € + % pro Zeile
 var finKP=Math.round((k.kaufpreis||0)*(k.fin_kp||0)/100);
 var finInv=Math.round((k.invest||0)*(k.fin_inv||0)/100);
 var nkCalc=c?c.nk:0;
 var finNK=Math.round(nkCalc*(k.fin_nk||0)/100);
 h+='<div class="k-card"><div class="k-head" style="display:flex;justify-content:space-between;align-items:center">Finanzierung<div style="display:flex;gap:6px">'+ki('kZ',k.zinssatz,'%')+ki('kL',k.laufzeit,'J.')+'</div></div>';
-h+='<div style="display:flex;justify-content:space-between;align-items:baseline;padding:6px 0 12px;border-bottom:1px solid var(--card-border);margin-bottom:8px"><div><span style="font-family:var(--mono);font-size:22px;font-weight:800;color:var(--text)" id="kKS">'+(c?eI(c.kr):'â')+'</span> <span style="font-family:var(--mono);font-size:12px;color:var(--blue)" id="kRT">Rate '+(c?eu(c.rt):'â')+'</span></div></div>';
+h+='<div style="display:flex;justify-content:space-between;align-items:baseline;padding:6px 0 12px;border-bottom:1px solid var(--card-border);margin-bottom:8px"><div><span style="font-family:var(--mono);font-size:22px;font-weight:800;color:var(--text)" id="kKS">'+(c?eI(c.kr):'–')+'</span> <span style="font-family:var(--mono);font-size:12px;color:var(--blue)" id="kRT">Rate '+(c?eu(c.rt):'–')+'</span></div></div>';
 // Kaufpreis
-h+='<div class="k-row"><span class="k-label">Kaufpreis</span><div style="display:flex;align-items:center;gap:4px"><input type="number" class="k-input" id="kFKE" value="'+finKP+'" step="100" onchange="syncFinEur(\''+d.id+'\',\'kFKE\',\'kFK\',\'kK\')" style="width:80px"><span class="k-unit">â¬</span><input type="number" class="k-input" id="kFK" value="'+(k.fin_kp||0)+'" step="1" onchange="recalcLive(\''+d.id+'\')" style="width:50px"><span class="k-unit">%</span></div></div>';
+h+='<div class="k-row"><span class="k-label">Kaufpreis</span><div style="display:flex;align-items:center;gap:4px"><input type="number" class="k-input" id="kFKE" value="'+finKP+'" step="100" onchange="syncFinEur(\''+d.id+'\',\'kFKE\',\'kFK\',\'kK\')" style="width:80px"><span class="k-unit">€</span><input type="number" class="k-input" id="kFK" value="'+(k.fin_kp||0)+'" step="1" onchange="recalcLive(\''+d.id+'\')" style="width:50px"><span class="k-unit">%</span></div></div>';
 // Sanierung
-h+='<div class="k-row"><span class="k-label">Sanierung</span><div style="display:flex;align-items:center;gap:4px"><span style="font-family:var(--mono);font-size:10px;color:var(--text-dim);white-space:nowrap">von '+eI(k.invest||0)+'</span><input type="number" class="k-input" id="kFIE" value="'+finInv+'" step="100" onchange="syncFinEur(\''+d.id+'\',\'kFIE\',\'kFI\',\'kI\')" style="width:80px"><span class="k-unit">â¬</span><input type="number" class="k-input" id="kFI" value="'+(k.fin_inv||0)+'" step="1" onchange="recalcLive(\''+d.id+'\')" style="width:50px"><span class="k-unit">%</span></div></div>';
+h+='<div class="k-row"><span class="k-label">Sanierung</span><div style="display:flex;align-items:center;gap:4px"><span style="font-family:var(--mono);font-size:10px;color:var(--text-dim);white-space:nowrap">von '+eI(k.invest||0)+'</span><input type="number" class="k-input" id="kFIE" value="'+finInv+'" step="100" onchange="syncFinEur(\''+d.id+'\',\'kFIE\',\'kFI\',\'kI\')" style="width:80px"><span class="k-unit">€</span><input type="number" class="k-input" id="kFI" value="'+(k.fin_inv||0)+'" step="1" onchange="recalcLive(\''+d.id+'\')" style="width:50px"><span class="k-unit">%</span></div></div>';
 // Nebenkosten
-h+='<div class="k-row"><span class="k-label">Nebenkosten</span><div style="display:flex;align-items:center;gap:4px"><span style="font-family:var(--mono);font-size:10px;color:var(--text-dim);white-space:nowrap" id="kNKvon">von '+eI(nkCalc)+'</span><input type="number" class="k-input" id="kFNE" value="'+finNK+'" step="100" onchange="syncFinEur(\''+d.id+'\',\'kFNE\',\'kFN\',null)" style="width:80px"><span class="k-unit">â¬</span><input type="number" class="k-input" id="kFN" value="'+(k.fin_nk||0)+'" step="1" onchange="recalcLive(\''+d.id+'\')" style="width:50px"><span class="k-unit">%</span></div></div>';
+h+='<div class="k-row"><span class="k-label">Nebenkosten</span><div style="display:flex;align-items:center;gap:4px"><span style="font-family:var(--mono);font-size:10px;color:var(--text-dim);white-space:nowrap" id="kNKvon">von '+eI(nkCalc)+'</span><input type="number" class="k-input" id="kFNE" value="'+finNK+'" step="100" onchange="syncFinEur(\''+d.id+'\',\'kFNE\',\'kFN\',null)" style="width:80px"><span class="k-unit">€</span><input type="number" class="k-input" id="kFN" value="'+(k.fin_nk||0)+'" step="1" onchange="recalcLive(\''+d.id+'\')" style="width:50px"><span class="k-unit">%</span></div></div>';
 h+='<div style="border-top:1px solid var(--card-border);margin-top:8px;padding-top:8px">';
-h+='<div class="k-row"><span class="k-label bold">Kreditsumme</span><span class="k-cv" id="kKS2">'+(c?eI(c.kr):'â')+'</span></div>';
-h+='<div class="k-row"><span class="k-label bold">Monatl. Rate</span><span class="k-cv" id="kRT2">'+(c?eu(c.rt):'â')+'</span></div>';
+h+='<div class="k-row"><span class="k-label bold">Kreditsumme</span><span class="k-cv" id="kKS2">'+(c?eI(c.kr):'–')+'</span></div>';
+h+='<div class="k-row"><span class="k-label bold">Monatl. Rate</span><span class="k-cv" id="kRT2">'+(c?eu(c.rt):'–')+'</span></div>';
 h+='</div></div>';
 // Laufende Kosten
 h+='<div class="k-card"><div class="k-head">Laufende Kosten (mtl.)</div>';
-h+=kr('BK umlegbar',ki('kBU',k.bk_umlegbar||0,'â¬'));
-h+=kr('Heizkosten',ki('kHZ',k.heizkosten||0,'â¬'));
-h+=kr('Lauf. Kredit',ki('kKL',k.kredit_laufend||0,'â¬'));
-h+=kr('BK nicht umlegbar',ki('kBN',k.bk_nu,'â¬'));
-h+=kr('BK n.u. FIX',ki('kBF',k.bk_nuf,'â¬'));
+h+=kr('BK umlegbar',ki('kBU',k.bk_umlegbar||0,'€'));
+h+=kr('Heizkosten',ki('kHZ',k.heizkosten||0,'€'));
+h+=kr('Lauf. Kredit',ki('kKL',k.kredit_laufend||0,'€'));
+h+=kr('BK nicht umlegbar',ki('kBN',k.bk_nu,'€'));
+h+=kr('BK n.u. FIX',ki('kBF',k.bk_nuf,'€'));
 h+='</div>';
 h+='<button class="btn btn-p" onclick="saveKalk(\''+d.id+'\')" style="width:100%;justify-content:center;padding:11px;margin-top:4px">Kalkulation speichern</button>';
 h+='</div>';
@@ -1150,26 +1150,26 @@ h+='</div>';
 h+='<div>';
 h+='<div class="k-hero"><div class="k-hero-label">Monatlicher Cashflow</div><div class="k-hero-val '+(c&&c.cf>=0?'pos':'neg')+'" id="kCFH">'+(c?eu(c.cf):'0')+'</div><div class="k-hero-sub" id="kCFA">'+(c?eI(c.cf*12)+' / Jahr':'')+'</div></div>';
 h+='<div class="k-result"><div class="k-rt">Rendite</div>';
-h+='<div class="k-rr"><span>Bruttorendite</span><span class="k-rv blue" id="kBR">'+(c?pc(c.br):'â')+'</span></div>';
-h+='<div class="k-rr"><span>Nettorendite</span><span class="k-rv blue" id="kNR">'+(c?pc(c.nr):'â')+'</span></div>';
-h+='<div class="k-rr"><span>EK-Rendite</span><span class="k-rv '+(c&&c.ek>=0?'pos':'neg')+'" id="kEK">'+(c?pc(c.ek):'â')+'</span></div>';
+h+='<div class="k-rr"><span>Bruttorendite</span><span class="k-rv blue" id="kBR">'+(c?pc(c.br):'–')+'</span></div>';
+h+='<div class="k-rr"><span>Nettorendite</span><span class="k-rv blue" id="kNR">'+(c?pc(c.nr):'–')+'</span></div>';
+h+='<div class="k-rr"><span>EK-Rendite</span><span class="k-rv '+(c&&c.ek>=0?'pos':'neg')+'" id="kEK">'+(c?pc(c.ek):'–')+'</span></div>';
 h+='</div>';
 h+='<div class="k-result"><div class="k-rt">Investition</div>';
-h+='<div class="k-rr"><span>Gesamtinvestition</span><span class="k-rv" id="kGIR">'+(c?eI(c.gi):'â')+'</span></div>';
-h+='<div class="k-rr"><span>Eigenmittel</span><span class="k-rv" id="kEMR">'+(c?eI(c.em):'â')+'</span></div>';
-h+='<div class="k-rr"><span>EK-Anteil</span><span class="k-rv blue" id="kEKA">'+(c?pc(c.gi>0?c.em/c.gi:0):'â')+'</span></div>';
+h+='<div class="k-rr"><span>Gesamtinvestition</span><span class="k-rv" id="kGIR">'+(c?eI(c.gi):'–')+'</span></div>';
+h+='<div class="k-rr"><span>Eigenmittel</span><span class="k-rv" id="kEMR">'+(c?eI(c.em):'–')+'</span></div>';
+h+='<div class="k-rr"><span>EK-Anteil</span><span class="k-rv blue" id="kEKA">'+(c?pc(c.gi>0?c.em/c.gi:0):'–')+'</span></div>';
 h+='</div>';
 h+='<div class="k-result"><div class="k-rt">Cashflow</div>';
-h+='<div class="k-ri"><span>Nettokaltmiete</span><span class="k-rv" id="kNM">'+(c?eu(c.nt):'â')+'</span></div>';
-h+='<div class="k-rr"><span>â BK n.u.</span><span class="k-rv" id="kBNR">â '+(k.bk_nu||0)+' â¬</span></div>';
-h+='<div class="k-rr"><span>â Lauf. Kredit</span><span class="k-rv">â '+(k.kredit_laufend||0)+' â¬</span></div>';
-h+='<div class="k-rr"><span>â Kreditrate</span><span class="k-rv" id="kRTR">â '+(c?eu(c.rt):'0')+' </span></div>';
+h+='<div class="k-rr"><span>Nettokaltmiete</span><span class="k-rv" id="kNM">'+(c?eu(c.nt):'–')+'</span></div>';
+h+='<div class="k-rr"><span>– BK n.u.</span><span class="k-rv" id="kBNR">– '+(k.bk_nu||0)+' €</span></div>';
+h+='<div class="k-rr"><span>– Lauf. Kredit</span><span class="k-rv">– '+(k.kredit_laufend||0)+' €</span></div>';
+h+='<div class="k-rr"><span>– Kreditrate</span><span class="k-rv" id="kRTR">– '+(c?eu(c.rt):'0')+' </span></div>';
 h+='</div>';
 // 20 Jahre
-h+='<div class="k-result" style="cursor:pointer" onclick="var el=document.getElementById(\'y20\');el.style.display=el.style.display===\'none\'?\'block\':\'none\'"><div class="k-rt">20-Jahre Cashflow â¾</div></div>';
+h+='<div class="k-result" style="cursor:pointer" onclick="var el=document.getElementById(\'y20\');el.style.display=el.style.display===\'none\'?\'block\':\'none\'"><div class="k-rt">20-Jahre Cashflow ▾</div></div>';
 h+='<div id="y20" style="display:none"><div id="y20Table"></div></div>';
 // Tilgungsplan
-h+='<div class="k-result" style="cursor:pointer" onclick="var el=document.getElementById(\'tilg\');el.style.display=el.style.display===\'none\'?\'block\':\'none\'"><div class="k-rt">Tilgungsplan â¾</div></div>';
+h+='<div class="k-result" style="cursor:pointer" onclick="var el=document.getElementById(\'tilg\');el.style.display=el.style.display===\'none\'?\'block\':\'none\'"><div class="k-rt">Tilgungsplan ▾</div></div>';
 h+='<div id="tilg" style="display:none"><div id="tilgTable"></div></div>';
 h+='</div></div>';
 h+='</div>'; // close kalkBody
