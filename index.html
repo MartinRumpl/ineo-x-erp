@@ -647,6 +647,8 @@ nav a svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8;
 
 <div class="toast" id="tst"></div>
 <script>
+/* OAuth popup guard: if we're a popup window with an access_token in the hash, don't init the app — let the opener read the token and close us. */
+if(window.opener&&window.opener!==window&&window.location.hash&&window.location.hash.indexOf('access_token=')!==-1){document.body&&(document.body.innerHTML='<p style="font-family:sans-serif;padding:20px">Anmeldung abgeschlossen, Fenster schließt gleich…</p>');throw new Error('__oauth_popup__')}
 var SU='https://hwaefpqglyktwelzbpzb.supabase.co';
 var SK='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh3YWVmcHFnbHlrdHdlbHpicHpiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2OTM5MDksImV4cCI6MjA4OTI2OTkwOX0.LdPRrmzuSej8Nk2gZn8ajx8qGeiVxWeJ4bNhFTiXfes';
 var sb=null,on=false;
