@@ -355,7 +355,7 @@ nav a svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8;
   </div></div>
 </div>
 
-<div class="page" id="p-settings"><div class="topbar"><h1>Einstellungen</h1></div><div class="panel" style="padding:18px"><div class="fsec"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/></svg>Supabase</div><div class="fgrid"><div class="fg"><label>URL</label><input value="https://hwaefpqglyktwelzbpzb.supabase.co" readonly style="color:var(--text-dim)"></div><div class="fg"><label>Status</label><div style="font-size:13px" id="sS">Wird geprüft</div></div></div><div class="fsec" style="margin-top:20px"><svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>Dokumentenablage</div><div class="fg" style="margin-bottom:8px"><label>Basispfad (NAS / Festplatte)</label><input id="basePfad" placeholder="z.B. \\\\NAS\\Immobilien oder C:\\Immobilien" onchange="saveBasePfad()" style="width:100%"></div><div style="font-size:10px;color:var(--text-dim);margin-bottom:12px">Unterordner werden automatisch erstellt: Basispfad/Deals/D-001_Adresse/</div><div style="font-size:10px;color:var(--text-dim)">Beim Kaufen: Dokumente werden unter Basispfad/Objekte/OBJ-001_Adresse/ verlinkt</div></div></div>
+<div class="page" id="p-settings"><div class="topbar"><h1>Einstellungen</h1></div><div class="panel" style="padding:18px"><div class="fsec"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/></svg>Supabase</div><div class="fgrid"><div class="fg"><label>URL</label><input value="https://hwaefpqglyktwelzbpzb.supabase.co" readonly style="color:var(--text-dim)"></div><div class="fg"><label>Status</label><div style="font-size:13px" id="sS">Wird geprüft</div></div></div><div class="fsec" style="margin-top:20px"><svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>Dokumentenablage</div><div class="fg" style="margin-bottom:8px"><label>Basispfad (NAS / Festplatte)</label><input id="basePfad" placeholder="z.B. \\\\NAS\\Immobilien oder C:\\Immobilien" onchange="saveBasePfad()" style="width:100%"></div><div style="font-size:10px;color:var(--text-dim);margin-bottom:12px">Unterordner werden automatisch erstellt: Basispfad/Deals/D-001_Adresse/</div><div style="font-size:10px;color:var(--text-dim)">Beim Kaufen: Dokumente werden unter Basispfad/Objekte/OBJ-001_Adresse/ verlinkt</div><div class="fsec" style="margin-top:20px"><svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>SharePoint &amp; OneDrive</div><div class="fgrid"><div class="fg"><label>SharePoint-Site-URL</label><input id="spSiteUrl" placeholder="https://firma.sharepoint.com/sites/Name" onchange="spSaveSiteUrl()" style="width:100%"></div><div class="fg"><label>Basis-Ordner (z.B. Immobilien)</label><input id="spBaseFolder" placeholder="Immobilien" onchange="spSaveBaseFolder()" style="width:100%"></div></div><div style="display:flex;align-items:center;gap:12px;margin-top:10px"><span id="spStatusBadge"><span class="tag tr" style="font-size:10px">Nicht verbunden</span></span><button id="spConnBtn" class="btn btn-s" onclick="spCfg.connected?spDisconnect():spConnect()">Mit Microsoft verbinden</button></div><div style="font-size:10px;color:var(--text-dim);margin-top:8px">Dateien in SharePoint: Basis-Ordner/OBJ-001 - Adresse/ — Hochladen direkt in Objekt/Wohnungs-Detail</div></div></div>
 </main>
 <!-- New Deal Modal -->
 <div class="mbg" id="ndM" onclick="if(event.target===this)cND()"><div class="mdl"><div class="mhd"><h3>Neuer Ankauf</h3><button class="mx" onclick="cND()">&#10005;</button></div><div class="mbd"><div class="fgrid">
@@ -1852,16 +1852,27 @@ function ovOpenFolder(){
 
 /** Dokumente eines Objekts laden */
 function oLoadDocs(objektId){
-  if(!on||!sb)return;
+  var dlEl=document.getElementById('oDocList');if(!dlEl)return;
+  var oObj=O.find(function(x){return x.id===objektId});
+  var spFolderPath=oObj?spObjektFolderPath(oObj):'';
+  if(!on||!sb){
+    dlEl.innerHTML='<div style="color:var(--text-dim);padding:12px">Offline – keine Supabase-Dokumente</div><div id="oSpDocs"></div>';
+    if(spFolderPath)spLoadDocsSection('oSpDocs',spFolderPath,spFolderPath);
+    return;
+  }
   sb.from('dokumente').select('*').eq('objekt_id',objektId).then(function(r){
     var dl=document.getElementById('oDocList');if(!dl)return;
-    if(r.error){dl.innerHTML='<div style="color:var(--red)">Fehler: '+r.error.message+'</div>';return}
-    if(!r.data||r.data.length===0){dl.innerHTML='<div style="padding:20px;text-align:center;color:var(--text-dim)">Noch keine Dokumente für dieses Objekt</div>';return}
-    var dh='<table class="tbl" style="font-size:11px"><thead><tr><th>Name</th><th>Typ</th><th>Datum</th><th>Pfad</th></tr></thead><tbody>';
-    r.data.forEach(function(d){
-      dh+='<tr><td><strong>'+(d.dateiname||d.original_dateiname||'Datei')+'</strong></td><td class="td-m">'+(d.dateityp||d.typ||'-')+'</td><td class="td-m">'+(d.datum||d.created_at||'').slice(0,10)+'</td><td class="td-m">'+(d.speicherpfad||d.url||'–')+'</td></tr>';
-    });
-    dh+='</tbody></table>';dl.innerHTML=dh;dl.style.padding='0';
+    var dh='';
+    if(r.error){dh='<div style="color:var(--red)">Fehler: '+r.error.message+'</div>';}
+    else if(!r.data||r.data.length===0){dh='<div style="padding:20px;text-align:center;color:var(--text-dim)">Noch keine erfassten Dokumente</div>';}
+    else{
+      dh='<table class="tbl" style="font-size:11px"><thead><tr><th>Name</th><th>Typ</th><th>Datum</th><th>Pfad</th></tr></thead><tbody>';
+      r.data.forEach(function(d){dh+='<tr><td><strong>'+(d.dateiname||d.original_dateiname||'Datei')+'</strong></td><td class="td-m">'+(d.dateityp||d.typ||'-')+'</td><td class="td-m">'+(d.datum||d.created_at||'').slice(0,10)+'</td><td class="td-m">'+(d.speicherpfad||d.url||'–')+'</td></tr>';});
+      dh+='</tbody></table>';
+    }
+    dh+='<div id="oSpDocs"></div>';
+    dl.innerHTML=dh;dl.style.padding='0';
+    if(spFolderPath)spLoadDocsSection('oSpDocs',spFolderPath,spFolderPath);
   });
 }
 function oBackList(){document.getElementById('oLV').style.display='';document.getElementById('oDV').style.display='none'}
@@ -1959,25 +1970,34 @@ function evToggleTk(){
 /** Dokumente einer Wohnung laden und anzeigen */
 function eLoadDocs(einheitId,objektId){
   var dl=document.getElementById('eDocList');if(!dl)return;
-  if(!on||!sb){dl.innerHTML='<div style="color:var(--text-dim)">Offline – keine Dokumente verfügbar</div>';return}
+  var eObj=E.find(function(x){return x.id===einheitId});
+  var oObj=objektId?O.find(function(x){return x.id===objektId}):null;
+  var spFolderPath=(eObj&&oObj)?spEinheitFolderPath(eObj,oObj):'';
+  if(!on||!sb){
+    dl.innerHTML='<div style="color:var(--text-dim);padding:12px">Offline – keine Supabase-Dokumente</div><div id="eSpDocs"></div>';
+    if(spFolderPath)spLoadDocsSection('eSpDocs',spFolderPath,spFolderPath);
+    return;
+  }
   var query=sb.from('dokumente').select('*');
   if(objektId)query=query.or('einheit_id.eq.'+einheitId+',objekt_id.eq.'+objektId);
   else query=query.eq('einheit_id',einheitId);
   query.then(function(r){
     var dl2=document.getElementById('eDocList');if(!dl2)return;
-    if(r.error){dl2.innerHTML='<div style="color:var(--red)">Fehler: '+r.error.message+'</div>';return}
-    if(!r.data||r.data.length===0){dl2.innerHTML='<div style="padding:20px;text-align:center;color:var(--text-dim)">Noch keine Dokumente für diese Wohnung</div>';return}
-    var dh='<table class="tbl" style="font-size:11px"><thead><tr><th>Name</th><th>Typ</th><th>Datum</th><th>Ablage-Pfad</th></tr></thead><tbody>';
-    r.data.forEach(function(d){
-      var link=(d.speicherpfad||d.url||'');
-      dh+='<tr><td><strong>'+(link?'<a href="'+link+'" target="_blank" style="color:var(--gold);text-decoration:none">':'')+(d.dateiname||d.original_dateiname||'Datei')+(link?'</a>':'')+'</strong></td>';
-      dh+='<td class="td-m">'+(d.dateityp||d.typ||'-')+'</td>';
-      dh+='<td class="td-m">'+(d.datum||d.created_at||'').slice(0,10)+'</td>';
-      dh+='<td class="td-m" style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(link||'–')+'</td></tr>';
-    });
-    dh+='</tbody></table>';dl2.innerHTML=dh;dl2.style.padding='0';
+    var dh='';
+    if(r.error){dh='<div style="color:var(--red)">Fehler: '+r.error.message+'</div>';}
+    else if(!r.data||r.data.length===0){dh='<div style="padding:20px;text-align:center;color:var(--text-dim)">Noch keine erfassten Dokumente für diese Wohnung</div>';}
+    else{
+      dh='<table class="tbl" style="font-size:11px"><thead><tr><th>Name</th><th>Typ</th><th>Datum</th><th>Ablage-Pfad</th></tr></thead><tbody>';
+      r.data.forEach(function(d){var link=(d.speicherpfad||d.url||'');dh+='<tr><td><strong>'+(link?'<a href="'+link+'" target="_blank" style="color:var(--gold);text-decoration:none">':'')+(d.dateiname||d.original_dateiname||'Datei')+(link?'</a>':'')+'</strong></td><td class="td-m">'+(d.dateityp||d.typ||'-')+'</td><td class="td-m">'+(d.datum||d.created_at||'').slice(0,10)+'</td><td class="td-m" style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(link||'–')+'</td></tr>';});
+      dh+='</tbody></table>';
+    }
+    dh+='<div id="eSpDocs"></div>';
+    dl2.innerHTML=dh;dl2.style.padding='0';
+    if(spFolderPath)spLoadDocsSection('eSpDocs',spFolderPath,spFolderPath);
   });
 }
+
+/** Dokument erfassen (via generischem Modal mBg) */
 
 /** Dokument erfassen (via generischem Modal mBg) */
 function eAddDoc(einheitId,objektId){
@@ -2224,6 +2244,27 @@ function parseGraphTokenFromUrl(){if(!window.location.hash)return false;var hash
 async function graphFetch(path,options){if(!outlookCfg.accessToken)throw new Error('Nicht angemeldet');options=options||{};var headers=options.headers||{};headers.Authorization='Bearer '+outlookCfg.accessToken;if(!(options.body instanceof FormData))headers['Content-Type']='application/json';options.headers=headers;var res=await fetch('https://graph.microsoft.com/v1.0'+path,options);if(res.status===401){clearOutlookSession();throw new Error('Microsoft Login abgelaufen. Bitte Outlook erneut verbinden.')}if(!res.ok){var txt=await res.text();throw new Error('Graph Fehler '+res.status+': '+txt)}if(res.status===204)return null;return await res.json()}
 async function loadGraphProfile(){try{var me=await graphFetch('/me');outlookCfg.accountName=(me.displayName||me.userPrincipalName||'').trim();outlookCfg.connected=true;saveCalendarState();updateOutlookBadge()}catch(e){console.warn(e)}}
 function outlookConnect(){if(window.location.protocol==='file:'){alert('Bitte die HTML über http://localhost öffnen, z.B. mit einem lokalen Webserver. Der Microsoft-Login funktioniert nicht direkt aus file://.');return}window.location.href=buildGraphAuthUrl()}
+
+// ===== SHAREPOINT / ONEDRIVE INTEGRATION =====
+var spCfg={tenantId:outlookCfg.tenantId,clientId:outlookCfg.clientId,redirectUri:(window.location.protocol==='file:'?'http://localhost':window.location.origin+'/index.html'),scopes:'Files.ReadWrite Sites.Read.All User.Read',connected:false,accessToken:'',accountName:'',siteId:'',driveId:'',siteUrl:'https://ineox.sharepoint.com/sites/Ineo-X',baseFolder:'Immobilien'};
+function saveSPState(){try{localStorage.setItem('ineox_sp_cfg',JSON.stringify({connected:spCfg.connected,accessToken:spCfg.accessToken,accountName:spCfg.accountName,siteId:spCfg.siteId,driveId:spCfg.driveId,siteUrl:spCfg.siteUrl,baseFolder:spCfg.baseFolder}))}catch(e){}}
+function loadSPState(){try{var s=localStorage.getItem('ineox_sp_cfg');if(s){var p=JSON.parse(s);for(var k in p)if(k in spCfg)spCfg[k]=p[k]}}catch(e){}}
+async function spFetch(path,options){if(!spCfg.accessToken)throw new Error('SharePoint nicht verbunden');options=options||{};var headers=options.headers||{};headers.Authorization='Bearer '+spCfg.accessToken;if(options.body&&!(options.body instanceof ArrayBuffer)&&typeof options.body==='string')headers['Content-Type']='application/json';options.headers=headers;var res=await fetch('https://graph.microsoft.com/v1.0'+path,options);if(res.status===401){spCfg.connected=false;spCfg.accessToken='';saveSPState();updateSPBadge();throw new Error('SharePoint Login abgelaufen')}if(!res.ok){var txt=await res.text();throw new Error('SP Fehler '+res.status+': '+txt)}if(res.status===204)return null;return await res.json()}
+async function spGetDriveId(){if(spCfg.driveId)return spCfg.driveId;var siteUrl=spCfg.siteUrl;var m=siteUrl.match(/https?:\/\/([^/]+)(.*)/);if(!m)throw new Error('Ungültige SharePoint-Site-URL');var site=await spFetch('/sites/'+m[1]+':'+m[2]);spCfg.siteId=site.id;var drive=await spFetch('/sites/'+site.id+'/drive');spCfg.driveId=drive.id;saveSPState();return spCfg.driveId}
+async function spListFolder(folderPath){var driveId=await spGetDriveId();try{var enc=encodeURIComponent(folderPath).replace(/%2F/g,'/');var data=await spFetch('/drives/'+driveId+'/root:/'+enc+':/children?$select=name,size,lastModifiedDateTime,webUrl,file,folder&$top=100');return data.value||[]}catch(e){if(e.message&&e.message.indexOf('404')!==-1)return[];throw e}}
+async function spEnsureFolder(folderPath){var driveId=await spGetDriveId();var parts=folderPath.split('/').filter(Boolean);var current='';for(var i=0;i<parts.length;i++){var parent=current;current=current?current+'/'+parts[i]:parts[i];try{var ep=parent?'/drives/'+driveId+'/root:/'+encodeURIComponent(parent).replace(/%2F/g,'/')+':/children':'/drives/'+driveId+'/root/children';await spFetch(ep,{method:'POST',body:JSON.stringify({name:parts[i],'folder':{},'@microsoft.graph.conflictBehavior':'ignore'})})}catch(e){}}}
+async function spUploadFile(folderPath,file){var driveId=await spGetDriveId();await spEnsureFolder(folderPath);var fp=folderPath+'/'+file.name;var buf=await file.arrayBuffer();var res=await fetch('https://graph.microsoft.com/v1.0/drives/'+driveId+'/root:/'+encodeURIComponent(fp).replace(/%2F/g,'/')+':/content',{method:'PUT',headers:{Authorization:'Bearer '+spCfg.accessToken,'Content-Type':file.type||'application/octet-stream'},body:buf});if(!res.ok){var t=await res.text();throw new Error('Upload Fehler: '+t)}return await res.json()}
+function spObjektFolderPath(o){var base=spCfg.baseFolder||'Immobilien';return base+'/'+(o.nr||'OBJ')+' - '+(o.adresse||'Objekt')}
+function spEinheitFolderPath(e,o){return spObjektFolderPath(o)+'/Einheiten/'+(e.bezeichnung||'Einheit')}
+function spConnect(){if(window.location.protocol==='file:'){alert('SharePoint-Login øber file:// nicht möglich. Bitte Webserver nutzen.');return}var params=new URLSearchParams({client_id:spCfg.clientId,response_type:'token',redirect_uri:spCfg.redirectUri,response_mode:'fragment',scope:spCfg.scopes,prompt:'select_account'});var url='https://login.microsoftonline.com/'+spCfg.tenantId+'/oauth2/v2.0/authorize?'+params.toString();var popup=window.open(url,'sp_auth','width=520,height=680,left=200,top=100');if(!popup){ts('⚠️ Popup blockiert – Pop-ups für diese Seite erlauben');return}var iv=setInterval(function(){try{if(popup.closed){clearInterval(iv);return}var h=popup.location.hash;if(h&&h.indexOf('access_token=')!==-1){clearInterval(iv);popup.close();var p=new URLSearchParams(h.replace(/^#/,''));var tk=p.get('access_token');if(tk){spCfg.accessToken=tk;spCfg.connected=true;spCfg.driveId='';spCfg.siteId='';saveSPState();updateSPBadge();spFetch('/me').then(function(me){spCfg.accountName=(me.displayName||me.userPrincipalName||'');saveSPState();updateSPBadge()}).catch(function(){});ts('✅ SharePoint verbunden');if(_ovCurId)oLoadDocs(_ovCurId);if(_evCurId){var ev=E.find(function(x){return x.id===_evCurId});if(ev)eLoadDocs(_evCurId,ev.objekt_id)}}}}catch(e){}},500)}
+function spDisconnect(){spCfg.connected=false;spCfg.accessToken='';spCfg.accountName='';spCfg.siteId='';spCfg.driveId='';saveSPState();updateSPBadge();ts('SharePoint getrennt')}
+function updateSPBadge(){var el=document.getElementById('spStatusBadge');if(!el)return;if(spCfg.connected)el.innerHTML='<span class="tag tg" style="font-size:10px">✓ '+escHtml(spCfg.accountName||'Verbunden')+'</span>';else el.innerHTML='<span class="tag tr" style="font-size:10px">Nicht verbunden</span>';var btn=document.getElementById('spConnBtn');if(btn)btn.textContent=spCfg.connected?'Trennen':'Mit Microsoft verbinden'}
+function spSaveSiteUrl(){var v=document.getElementById('spSiteUrl').value.trim();spCfg.siteUrl=v;spCfg.siteId='';spCfg.driveId='';saveSPState();ts('Site-URL gespeichert')}
+function spSaveBaseFolder(){var v=document.getElementById('spBaseFolder').value.trim();spCfg.baseFolder=v||'Immobilien';saveSPState();ts('Basis-Ordner gespeichert')}
+function loadSPSettings(){var su=document.getElementById('spSiteUrl');if(su)su.value=spCfg.siteUrl||'';var sf=document.getElementById('spBaseFolder');if(sf)sf.value=spCfg.baseFolder||'Immobilien';updateSPBadge()}
+async function spLoadDocsSection(containerId,folderPath,uploadFolderPath){var wrap=document.getElementById(containerId);if(!wrap)return;if(!spCfg.connected){wrap.innerHTML='<div style="padding:12px;display:flex;align-items:center;gap:10px;border-top:1px solid var(--card-border);flex-wrap:wrap"><span style="color:var(--text-dim);font-size:11px">&#128194; SharePoint nicht verbunden &ndash;</span><button class="btn btn-s" onclick="spConnect()">Mit Microsoft verbinden</button></div>';return}wrap.innerHTML='<div style="padding:12px;color:var(--text-dim);font-size:11px">&#128194; SharePoint-Dateien werden geladen…</div>';try{var items=await spListFolder(folderPath);var h='<div style="border-top:1px solid var(--card-border);padding:12px">';h+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:6px">';h+='<span style="font-size:11px;font-weight:600;color:var(--gold)">&#128194; SharePoint: /'+escHtml(folderPath)+'</span>';h+='<label class="btn btn-s" style="cursor:pointer">&#128228; Hochladen<input type="file" multiple style="display:none" onchange="spHandleUpload(this,'+JSON.stringify(uploadFolderPath)+')" accept=".pdf,.jpg,.jpeg,.png,.docx,.xlsx,.eml,.msg,.zip"></label>';h+='</div>';if(items.length===0){h+='<div style="color:var(--text-dim);font-size:11px;padding:8px 0">Noch keine Dateien in diesem SharePoint-Ordner</div>';}else{h+='<table class="tbl" style="font-size:11px"><thead><tr><th>Name</th><th>Typ</th><th style="text-align:right">Größe</th><th>Geändert</th></tr></thead><tbody>';items.forEach(function(it){var isFolder=!!it.folder;var icon=isFolder?'&#128193;':'&#128196;';if(it.name.match(/\.(jpg|jpeg|png|gif|webp)$/i))icon='&#128247;';else if(it.name.match(/\.pdf$/i))icon='&#128196;';var ext=isFolder?'Ordner':(it.name.split('.').pop()||'').toUpperCase();var sz=it.size?Math.round(it.size/1024)+' KB':'&ndash;';var dt=(it.lastModifiedDateTime||'').slice(0,10);h+='<tr>';h+='<td><a href="'+it.webUrl+'" target="_blank" style="color:var(--gold);text-decoration:none">'+icon+' '+escHtml(it.name)+'</a></td>';h+='<td class="td-m">'+ext+'</td>';h+='<td style="text-align:right;font-family:var(--mono)">'+sz+'</td>';h+='<td class="td-m">'+dt+'</td></tr>';});h+='</tbody></table>';}h+='</div>';wrap.innerHTML=h;}catch(e){wrap.innerHTML='<div style="padding:12px;color:var(--red);font-size:11px">&#9888; SharePoint: '+escHtml(e.message)+'</div>';}}
+async function spHandleUpload(input,folderPath){var files=Array.prototype.slice.call(input.files);if(!files.length)return;ts('Lade hoch…');var failed=0;try{for(var i=0;i<files.length;i++){try{await spUploadFile(folderPath,files[i])}catch(e){failed++;console.warn(e)}}}finally{input.value=''}if(failed>0)ts('⚠ '+failed+' Datei(en) fehlgeschlagen');else ts('✅ '+files.length+' Datei(en) hochgeladen');if(_ovCurId)oLoadDocs(_ovCurId);if(_evCurId){var ev=E.find(function(x){return x.id===_evCurId});if(ev)eLoadDocs(_evCurId,ev.objekt_id)}}
+
 function mapGraphEventToTm(ev){var start=(ev.start&&ev.start.dateTime)||ev.start&&ev.start.date||'';var end=(ev.end&&ev.end.dateTime)||ev.end&&ev.end.date||'';var s=new Date(start);var e=new Date(end);var allDay=!!ev.isAllDay;return normalizeTMItem({id:'outlook-'+ev.id,titel:ev.subject||'(ohne Titel)',datum:(allDay?(start||'').slice(0,10):toYmd(s)),zeit:allDay?'00:00':pad2(s.getHours())+':'+pad2(s.getMinutes()),ende:allDay?'23:59':pad2(e.getHours())+':'+pad2(e.getMinutes()),ort:ev.location&&ev.location.displayName?ev.location.displayName:'',kategorie:'Outlook Termin',farbe:CAL_COLORS['Outlook Termin'],benutzer:outlookCfg.accountName||getCurrentUserName(),quelle:'outlook',outlook_id:ev.id})}
 async function syncOutlookNow(){if(outlookCfg.syncRunning)return;if(!outlookCfg.accessToken){updateOutlookBadge();ts('Bitte zuerst Outlook verbinden');return}outlookCfg.syncRunning=true;try{await loadGraphProfile();var start=addDays(new Date(),-90);var end=addDays(new Date(),365);var path='/me/calendarView?startDateTime='+encodeURIComponent(start.toISOString())+'&endDateTime='+encodeURIComponent(end.toISOString())+'&$top=500&$orderby=start/dateTime';var data=await graphFetch(path);TM=TM.filter(function(i){return i.quelle!=='outlook'});(data.value||[]).forEach(function(ev){TM.push(mapGraphEventToTm(ev))});outlookCfg.lastSync=new Date().toLocaleString('de-AT');saveCalendarState();populateCalendarFilters();applyCalendarFilters();updateOutlookBadge();ts('Outlook-Termine synchronisiert')}catch(e){console.error(e);alert('Outlook-Sync fehlgeschlagen\n'+e.message)}finally{outlookCfg.syncRunning=false}}
 function tmToGraphPayload(item){var isAllDay=item.kategorie==='Feiertag';var start=item.datum+'T'+(item.zeit||'00:00')+':00';var end=item.datum+'T'+(item.ende||item.zeit||'23:59')+':00';return {subject:item.titel,location:{displayName:item.ort||''},isAllDay:isAllDay,start:{dateTime:isAllDay?item.datum+'T00:00:00':start,timeZone:'Europe/Vienna'},end:{dateTime:isAllDay?item.datum+'T23:59:00':end,timeZone:'Europe/Vienna'}}}
@@ -2766,7 +2807,7 @@ document.addEventListener('input',function(ev){if(ev.target&&ev.target.id==='bkV
 var _bkOrigGo=go;
 go=function(p){_bkOrigGo(p);if(p==='bk'){bkInit()}};
 
-rD();rDL();rO();rE();rK();rAF();cI();loadBasePfad();bkInit();
+rD();rDL();rO();rE();rK();rAF();cI();loadBasePfad();loadSPState();loadSPSettings();bkInit();
 
 setTimeout(initSB,500);
 
