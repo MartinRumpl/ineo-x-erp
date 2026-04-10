@@ -1744,66 +1744,110 @@ function rE(){var r='';for(var i=0;i<E.length;i++){var e=E[i];var oN='-';for(var
 function delObjekt(id){var o=null;for(var i=0;i<O.length;i++)if(O[i].id===id){o=O[i];break}if(!o)return;var ec=0;for(var i=0;i<E.length;i++)if(E[i].objekt_id===id)ec++;var msg=ec>0?'"'+o.adresse+'" löschen? Achtung: '+ec+' Wohnung(en) werden ebenfalls gelöscht!':'"'+o.adresse+'" löschen?';if(!confirm(msg))return;for(var i=E.length-1;i>=0;i--)if(E[i].objekt_id===id){if(on&&sb)sb.from('einheiten').delete().eq('id',E[i].id);E.splice(i,1)}if(on&&sb)sb.from('objekte').delete().eq('id',id);for(var i=O.length-1;i>=0;i--)if(O[i].id===id){O.splice(i,1);break}saveLocal();rO();rE();ts('"'+(o.adresse||o.nr)+'" gelöscht')}
 function delEinheit(id){var e=null;for(var i=0;i<E.length;i++)if(E[i].id===id){e=E[i];break}if(!e)return;if(!confirm('"'+(e.bezeichnung||'Wohnung')+'" löschen?'))return;if(on&&sb)sb.from('einheiten').delete().eq('id',id);for(var i=E.length-1;i>=0;i--)if(E[i].id===id){E.splice(i,1);break}saveLocal();rE();rO();ts('"'+(e.bezeichnung||'Wohnung')+'" gelöscht')}
 
-// === ZINSHAUS DETAIL ===
-// === OBJEKT/ZINSHAUS DETAIL (Tabs: Stammdaten | Wohnungen | Dokumente | Technik) ===
+// === ZINSHAUS DETAIL (Kachel-Layout: KPIs | Stammdaten | Einheiten | Technik | Dokumente) ===
 function sOV(id){
   var o=null;for(var i=0;i<O.length;i++)if(O[i].id===id){o=O[i];break}if(!o)return;
   _ovCurId=id;
   document.getElementById('oLV').style.display='none';
   var dv=document.getElementById('oDV');dv.style.display='';
   var einh=E.filter(function(x){return x.objekt_id===id});
+  var gesMiete=einh.reduce(function(s,e){return s+(parseFloat(e.miete)||0)},0);
+  var vermiet=einh.filter(function(e){return e.status==='vermietet'}).length;
+  var angeb=TANGEB.filter(function(a){return a.objekt_id===id});
+  var bests=TBEST.filter(function(b){return b.objekt_id===id});
+  var rechs=TRECH.filter(function(r){return r.objekt_id===id});
+  var fp=objektFolderPath(o);
   var h='';
-  h+='<div style="margin-bottom:14px;display:flex;gap:8px"><button class="btn btn-s" onclick="oBackList()">← Zurück</button><button class="btn btn-s" style="color:var(--red);border-color:rgba(212,90,90,.3);margin-left:auto" onclick="delObjekt(\''+id+'\');oBackList()">🗑 Zinshaus löschen</button></div>';
-  h+='<div class="topbar"><div><h1>'+(o.nr||'')+' — '+(o.adresse||'')+'</h1><div style="font-size:11px;color:var(--text-dim);margin-top:4px">'+(o.typ||'')+'</div></div></div>';
-  // Tab-Leiste
-  h+='<div class="ev-tabbar" id="ovTabBar">';
-  h+='<button type="button" onclick="setOVTab(\'stamm\')" class="on">Stammdaten</button>';
-  h+='<button type="button" onclick="setOVTab(\'whg\')">Wohnungen ('+einh.length+')</button>';
-  h+='<button type="button" onclick="setOVTab(\'docs\')">Dokumente</button>';
-  h+='<button type="button" onclick="setOVTab(\'technik\')">🔧 Technik</button>';
-  h+='</div>';
-  // Stammdaten Tab
-  h+='<div id="ovC_stamm">';
-  h+='<div class="panel" style="padding:18px;margin-bottom:14px"><div class="fsec"><svg viewBox="0 0 24 24"><path d="M3 21V9l9-6 9 6v12H3z"/></svg>Stammdaten</div><div class="fgrid">';
+  // Navigationsleiste
+  h+='<div style="margin-bottom:14px;display:flex;gap:8px;align-items:center">';
+  h+='<button class="btn btn-s" onclick="oBackList()">&#8592; Zur\u00fcck</button>';
+  h+='<div style="margin-left:auto;display:flex;gap:8px">';
+  if(fp)h+='<button class="btn btn-s" onclick="ovOpenFolder()">&#128194; OneDrive-Ordner</button>';
+  h+='<button class="btn btn-s" style="color:var(--red);border-color:rgba(212,90,90,.3)" onclick="if(confirm(\'Zinshaus wirklich l\u00f6schen?\'))delObjekt(\''+id+'\')">&#128465; L\u00f6schen</button>';
+  h+='</div></div>';
+  // Header
+  h+='<div class="topbar" style="margin-bottom:18px"><div>';
+  h+='<h1>'+(o.nr||'')+' &#8212; '+escHtml(o.adresse||'')+'</h1>';
+  h+='<div style="font-size:11px;color:var(--text-dim);margin-top:4px">'+(o.typ||'Zinshaus')+' &middot; '+einh.length+' Einheit'+(einh.length!==1?'en':'')+' &middot; '+vermiet+' vermietet</div>';
+  h+='</div></div>';
+  // ROW 1: KPIs + Stammdaten (2 Spalten)
+  h+='<div style="display:grid;grid-template-columns:1fr 1.5fr;gap:14px;margin-bottom:14px">';
+  // KPI-Kachel
+  h+='<div class="panel" style="padding:18px"><div class="fsec">&#x1F4CA; Kennzahlen</div>';
+  h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px">';
+  h+='<div class="kpi"><div class="kpi-l">Kaufpreis</div><div class="kpi-v" style="font-size:14px">'+eu(o.kaufpreis||0)+'</div></div>';
+  h+='<div class="kpi"><div class="kpi-l">Fl\u00e4che</div><div class="kpi-v" style="font-size:14px">'+(o.qm||'&#8211;')+' m&#178;</div></div>';
+  h+='<div class="kpi"><div class="kpi-l">Monatsmiete</div><div class="kpi-v" style="font-size:14px;color:var(--green)">'+eu(gesMiete)+'</div></div>';
+  h+='<div class="kpi"><div class="kpi-l">Jahresmiete</div><div class="kpi-v" style="font-size:14px;color:var(--green)">'+eu(gesMiete*12)+'</div></div>';
+  if(o.kaufpreis&&gesMiete){var rend=((gesMiete*12)/(parseFloat(o.kaufpreis)||1)*100).toFixed(2);
+    h+='<div class="kpi" style="grid-column:1/3"><div class="kpi-l">Brutto-Rendite p.a.</div><div class="kpi-v" style="font-size:18px;color:var(--gold)">'+rend+' %</div></div>';}
+  h+='</div></div>';
+  // Stammdaten-Kachel
+  h+='<div class="panel" style="padding:18px"><div class="fsec">&#127968; Stammdaten</div>';
+  h+='<div class="fgrid" style="margin-top:12px">';
   h+='<div class="fg"><label>Adresse</label><input value="'+(o.adresse||'').replace(/"/g,'&quot;')+'" onchange="oUpd(\''+id+'\',\'adresse\',this.value)"></div>';
   h+='<div class="fg"><label>Typ</label><select onchange="oUpd(\''+id+'\',\'typ\',this.value)"><option value="Wohnung"'+(o.typ==='Wohnung'?' selected':'')+'>Wohnung</option><option value="Zinshaus"'+(o.typ==='Zinshaus'?' selected':'')+'>Zinshaus</option><option value="ETW"'+(o.typ==='ETW'?' selected':'')+'>ETW</option></select></div>';
-  h+='<div class="fg"><label>Kaufpreis €</label><input type="number" value="'+(o.kaufpreis||0)+'" onchange="oUpd(\''+id+'\',\'kaufpreis\',parseFloat(this.value)||0)"></div>';
+  h+='<div class="fg"><label>Kaufpreis \u20ac</label><input type="number" value="'+(o.kaufpreis||0)+'" onchange="oUpd(\''+id+'\',\'kaufpreis\',parseFloat(this.value)||0)"></div>';
   h+='<div class="fg"><label>Quadratmeter</label><input type="number" value="'+(o.qm||0)+'" onchange="oUpd(\''+id+'\',\'qm\',parseFloat(this.value)||0)"></div>';
+  h+='<div class="fg"><label>Notizen</label><input value="'+(o.notizen||'').replace(/"/g,'&quot;')+'" onchange="oUpd(\''+id+'\',\'notizen\',this.value)" placeholder="Zus\u00e4tzliche Infos..."></div>';
+  h+='<div class="fg"><label>Kaufdatum</label><input type="date" value="'+(o.kaufdatum||'')+'" onchange="oUpd(\''+id+'\',\'kaufdatum\',this.value)"></div>';
   h+='</div></div>';
-  h+='</div>';// /ovC_stamm
-  // Wohnungen Tab
-  h+='<div id="ovC_whg" style="display:none">';
-  h+='<div class="panel"><div style="padding:14px 18px;border-bottom:1px solid var(--card-border);display:flex;justify-content:space-between;align-items:center"><div style="font-size:13px;font-weight:600;color:var(--gold)">Wohnungen ('+einh.length+')</div><button class="btn btn-p" onclick="addEinheit(\''+id+'\')">+ Wohnung</button></div>';
+  h+='</div>';
+  // ROW 2: Wohnungen & Einheiten
+  h+='<div class="panel" style="margin-bottom:14px">';
+  h+='<div style="padding:14px 18px;border-bottom:1px solid var(--card-border);display:flex;justify-content:space-between;align-items:center">';
+  h+='<div style="font-size:13px;font-weight:600;color:var(--gold)">&#127968; Wohnungen &amp; Einheiten ('+einh.length+')</div>';
+  h+='<button class="btn btn-p" onclick="addEinheit(\''+id+'\')">+ Wohnung</button>';
+  h+='</div>';
   if(einh.length>0){
-    h+='<table class="tbl"><thead><tr><th>Bezeichnung</th><th>m²</th><th>Mieter</th><th style="text-align:right">Miete</th><th>Status</th></tr></thead><tbody>';
-    for(var i=0;i<einh.length;i++){var ei=einh[i];
-      h+='<tr style="cursor:pointer" onclick="sEV(\''+ei.id+'\')"><td style="font-weight:600">'+ei.bezeichnung+'</td><td>'+(ei.qm||'-')+'</td><td class="td-m">'+(ei.mieter||'-')+'</td><td style="text-align:right;font-family:var(--mono)">'+eu(ei.miete||0)+'</td><td><span class="tag '+(ei.status==='vermietet'?'tg':'tr')+'">'+ei.status+'</span></td></tr>';
+    h+='<table class="tbl"><thead><tr><th>Bezeichnung</th><th>m&#178;</th><th>Mieter</th><th style="text-align:right">Miete/Monat</th><th>Vertrag bis</th><th>Ang.</th><th>Status</th></tr></thead><tbody>';
+    for(var ei,nA,i=0;i<einh.length;i++){ei=einh[i];
+      nA=TANGEB.filter(function(a){return a.einheit_id===ei.id}).length;
+      h+='<tr style="cursor:pointer" onclick="sEV(\''+ei.id+'\')"><td style="font-weight:600">'+escHtml(ei.bezeichnung||'')+'</td>';
+      h+='<td>'+(ei.qm||'&#8211;')+'</td><td class="td-m">'+escHtml(ei.mieter||'&#8211;')+'</td>';
+      h+='<td style="text-align:right;font-family:var(--mono)">'+eu(ei.miete||0)+'</td>';
+      h+='<td class="td-m">'+(ei.vertrag_bis||'&#8211;')+'</td>';
+      h+='<td style="text-align:center">'+(nA>0?'<span class="tag ty" style="font-size:9px">'+nA+'</span>':'&#8211;')+'</td>';
+      h+='<td><span class="tag '+(ei.status==='vermietet'?'tg':'tr')+'">'+ei.status+'</span></td></tr>';
     }
     h+='</tbody></table>';
-  } else h+='<div style="padding:30px;text-align:center;color:var(--text-dim);font-size:12px">Noch keine Wohnungen in diesem Objekt</div>';
+  } else h+='<div style="padding:30px;text-align:center;color:var(--text-dim);font-size:12px">Noch keine Wohnungen &#8212; &ldquo;+ Wohnung&rdquo; klicken</div>';
   h+='</div>';
-  h+='</div>';// /ovC_whg
-  // Dokumente Tab
-  h+='<div id="ovC_docs" style="display:none">';
-  h+='<div class="panel"><div style="padding:14px 18px;border-bottom:1px solid var(--card-border);display:flex;justify-content:space-between;align-items:center"><div style="font-size:13px;font-weight:600;color:var(--gold)">Dokumente</div><button class="btn btn-s" onclick="eAddDoc(\'\',\''+id+'\')">+ Dokument erfassen</button></div><div id="oDocList" style="padding:18px;text-align:center;color:var(--text-dim);font-size:11px">Lade...</div></div>';
-  h+='</div>';// /ovC_docs
-  // Technik Tab
-  h+='<div id="ovC_technik" style="display:none"><div id="ovTechnikCont"></div></div>';
+  // ROW 3: Technik & Aufträge (collapsible, standardmäßig offen)
+  h+='<div class="panel" style="margin-bottom:14px">';
+  h+='<div style="padding:14px 18px;border-bottom:1px solid var(--card-border);display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="ovToggleTk()">';
+  h+='<div style="font-size:13px;font-weight:600;color:var(--gold)">&#x1F527; Technik &amp; Auftr\u00e4ge&nbsp;';
+  h+='<span style="font-size:11px;font-weight:400;color:var(--text-dim)">'+angeb.length+' Angebote &middot; '+bests.length+' Bestellungen &middot; '+rechs.length+' Rechnungen</span></div>';
+  h+='<span id="ovTkArr" style="color:var(--text-dim);font-size:16px">&#9660;</span>';
+  h+='</div><div id="ovTkCont" style="padding:14px">';
+  h+=tkObjektTechnikHtml(id);
+  h+='</div></div>';
+  // ROW 4: Dokumente & Fotos
+  h+='<div class="panel" style="margin-bottom:20px">';
+  h+='<div style="padding:14px 18px;border-bottom:1px solid var(--card-border);display:flex;justify-content:space-between;align-items:center">';
+  h+='<div style="font-size:13px;font-weight:600;color:var(--gold)">&#128206; Dokumente &amp; Fotos</div>';
+  h+='<div style="display:flex;gap:6px">';
+  h+='<button class="btn btn-s" onclick="eAddDoc(\'\',\''+id+'\')">+ Dokument erfassen</button>';
+  if(fp)h+='<button class="btn btn-s" onclick="ovOpenFolder()">&#128194; Ordner anzeigen</button>';
+  h+='</div></div>';
+  h+='<div id="oDocList" style="padding:14px;min-height:60px;color:var(--text-dim);font-size:11px">Lade...</div>';
+  h+='</div>';
   dv.innerHTML=h;
-  // Dokumente nachladen
   oLoadDocs(id);
 }
-
-/** Tab-Wechsel in Objekt-Detail */
-function setOVTab(tab){
-  var tabs=['stamm','whg','docs','technik'];
-  var bar=document.getElementById('ovTabBar');
-  if(bar){var btns=bar.querySelectorAll('button');tabs.forEach(function(t,i){if(btns[i])btns[i].className=(t===tab?'on':'')})}
-  tabs.forEach(function(t){var c=document.getElementById('ovC_'+t);if(c)c.style.display=(t===tab?'block':'none')});
-  if(tab==='technik'){
-    var tc=document.getElementById('ovTechnikCont');
-    if(tc)tc.innerHTML=tkObjektTechnikHtml(_ovCurId);
-  }
+/** Technik-Sektion in Zinshaus-Detail ein-/ausblenden */
+function ovToggleTk(){
+  var c=document.getElementById('ovTkCont'),a=document.getElementById('ovTkArr');
+  if(!c)return;
+  if(c.style.display==='none'){c.style.display='block';if(a)a.innerHTML='&#9660;';}
+  else{c.style.display='none';if(a)a.innerHTML='&#9658;';}
+}
+/** OneDrive-Ordner des aktuellen Zinshausobjekts anzeigen */
+function ovOpenFolder(){
+  var o=null;for(var i=0;i<O.length;i++)if(O[i].id===_ovCurId){o=O[i];break}
+  var fp=o?objektFolderPath(o):'';
+  if(fp){alert('OneDrive-Ordner f\u00fcr dieses Objekt:\n\n'+fp+'\n\nBitte diesen Pfad im Explorer \u00f6ffnen.');}
+  else ts('Kein OneDrive-Basispfad konfiguriert (Einstellungen \u2192 OneDrive-Basispfad)');
 }
 
 /** Dokumente eines Objekts laden */
@@ -1836,62 +1880,80 @@ function addEinheit(objId){
   rE();sOV(objId);ts('Wohnung angelegt');
 }
 
-// === WOHNUNG DETAIL ===
-// === WOHNUNG DETAIL (Tabs: Stammdaten | Dokumente | Technik) ===
+// === WOHNUNG DETAIL (Kachel-Layout: KPIs | Stammdaten | Technik | Dokumente) ===
 function sEV(id){
   var e=null;for(var i=0;i<E.length;i++)if(E[i].id===id){e=E[i];break}if(!e)return;
   _evCurId=id;
   go('einheiten');
   document.getElementById('eLV').style.display='none';
   var dv=document.getElementById('eDV');dv.style.display='';
-  var oN='-',oId=null;
-  for(var j=0;j<O.length;j++)if(O[j].id===e.objekt_id){oN=O[j].nr+' — '+O[j].adresse;oId=O[j].id;break}
+  var oN='&#8211;',oId=null;
+  for(var j=0;j<O.length;j++)if(O[j].id===e.objekt_id){oN=O[j].nr+' &#8212; '+O[j].adresse;oId=O[j].id;break}
   _evCurOId=oId||'';
+  var angeb=TANGEB.filter(function(a){return a.einheit_id===id});
+  var bests=TBEST.filter(function(b){return b.einheit_id===id});
+  var rechs=TRECH.filter(function(r){return r.einheit_id===id});
   var h='';
-  // Navigationszeile
-  h+='<div style="margin-bottom:14px;display:flex;gap:8px">';
-  h+='<button class="btn btn-s" onclick="eBackList()">← Zurück</button>';
-  if(oId)h+='<button class="btn btn-s" onclick="sOV(\''+oId+'\')">Zum Zinshaus</button>';
-  h+='<button class="btn btn-s" style="color:var(--red);border-color:rgba(212,90,90,.3);margin-left:auto" onclick="delEinheit(\''+id+'\');eBackList()">🗑 Wohnung löschen</button>';
+  // Navigationsleiste
+  h+='<div style="margin-bottom:14px;display:flex;gap:8px;align-items:center">';
+  h+='<button class="btn btn-s" onclick="eBackList()">&#8592; Zur\u00fcck</button>';
+  if(oId)h+='<button class="btn btn-s" onclick="sOV(\''+oId+'\')">&#127968; Zum Zinshaus</button>';
+  h+='<button class="btn btn-s" style="color:var(--red);border-color:rgba(212,90,90,.3);margin-left:auto" onclick="if(confirm(\'Wohnung wirklich l\u00f6schen?\'))delEinheit(\''+id+'\')">&#128465; L\u00f6schen</button>';
   h+='</div>';
   // Header
-  h+='<div class="topbar"><div><h1>'+e.bezeichnung+'</h1><div style="font-size:11px;color:var(--text-dim);margin-top:4px">'+oN+'</div></div></div>';
-  // Tab-Leiste
-  h+='<div class="ev-tabbar" id="evTabBar">';
-  h+='<button type="button" onclick="setEVTab(\'stamm\')" class="on">Stammdaten</button>';
-  h+='<button type="button" onclick="setEVTab(\'docs\')">Dokumente</button>';
-  h+='<button type="button" onclick="setEVTab(\'technik\')">🔧 Technik</button>';
-  h+='</div>';
-  // Tab-Inhalte
-  h+='<div id="evC_stamm">';
-  h+='<div class="panel" style="padding:18px;margin-bottom:14px"><div class="fsec"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>Stammdaten</div><div class="fgrid">';
+  h+='<div class="topbar" style="margin-bottom:18px"><div>';
+  h+='<h1>'+escHtml(e.bezeichnung||'')+'</h1>';
+  h+='<div style="font-size:11px;color:var(--text-dim);margin-top:4px">'+oN+' &middot; <span class="tag '+(e.status==='vermietet'?'tg':'tr')+'" style="font-size:10px">'+e.status+'</span></div>';
+  h+='</div></div>';
+  // ROW 1: KPIs + Stammdaten (2 Spalten)
+  h+='<div style="display:grid;grid-template-columns:1fr 1.5fr;gap:14px;margin-bottom:14px">';
+  // KPI-Kachel
+  h+='<div class="panel" style="padding:18px"><div class="fsec">&#x1F4CA; Kennzahlen</div>';
+  h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px">';
+  h+='<div class="kpi"><div class="kpi-l">Miete/Monat</div><div class="kpi-v" style="font-size:14px;color:var(--green)">'+eu(e.miete||0)+'</div></div>';
+  h+='<div class="kpi"><div class="kpi-l">Jahresmiete</div><div class="kpi-v" style="font-size:14px;color:var(--green)">'+eu((parseFloat(e.miete)||0)*12)+'</div></div>';
+  h+='<div class="kpi"><div class="kpi-l">Fl\u00e4che</div><div class="kpi-v" style="font-size:14px">'+(e.qm||'&#8211;')+' m&#178;</div></div>';
+  if(e.qm&&e.miete){h+='<div class="kpi"><div class="kpi-l">\u20ac/m&#178;</div><div class="kpi-v" style="font-size:14px">'+((parseFloat(e.miete)||0)/(parseFloat(e.qm)||1)).toFixed(2)+'</div></div>';}
+  else{h+='<div class="kpi"><div class="kpi-l">Angebote</div><div class="kpi-v" style="font-size:14px">'+angeb.length+'</div></div>';}
+  h+='<div class="kpi" style="grid-column:1/3"><div class="kpi-l">Vertrag bis</div><div class="kpi-v" style="font-size:14px">'+(e.vertrag_bis||'&#8211;')+'</div></div>';
+  h+='</div></div>';
+  // Stammdaten-Kachel
+  h+='<div class="panel" style="padding:18px"><div class="fsec">&#127968; Stammdaten</div>';
+  h+='<div class="fgrid" style="margin-top:12px">';
   h+='<div class="fg"><label>Bezeichnung</label><input value="'+(e.bezeichnung||'').replace(/"/g,'&quot;')+'" onchange="eUpd(\''+id+'\',\'bezeichnung\',this.value)"></div>';
   h+='<div class="fg"><label>Quadratmeter</label><input type="number" value="'+(e.qm||0)+'" onchange="eUpd(\''+id+'\',\'qm\',parseFloat(this.value)||0)"></div>';
   h+='<div class="fg"><label>Mieter</label><input value="'+(e.mieter||'').replace(/"/g,'&quot;')+'" onchange="eUpd(\''+id+'\',\'mieter\',this.value)"></div>';
-  h+='<div class="fg"><label>Miete €/Monat</label><input type="number" step="0.01" value="'+(e.miete||0)+'" onchange="eUpd(\''+id+'\',\'miete\',parseFloat(this.value)||0)"></div>';
+  h+='<div class="fg"><label>Miete \u20ac/Monat</label><input type="number" step="0.01" value="'+(e.miete||0)+'" onchange="eUpd(\''+id+'\',\'miete\',parseFloat(this.value)||0)"></div>';
   h+='<div class="fg"><label>Status</label><select onchange="eUpd(\''+id+'\',\'status\',this.value)"><option value="leer"'+(e.status==='leer'?' selected':'')+'>leer</option><option value="vermietet"'+(e.status==='vermietet'?' selected':'')+'>vermietet</option></select></div>';
   h+='<div class="fg"><label>Vertrag bis</label><input type="date" value="'+(e.vertrag_bis||'')+'" onchange="eUpd(\''+id+'\',\'vertrag_bis\',this.value)"></div>';
   h+='</div></div>';
-  h+='</div>';// /evC_stamm
-  h+='<div id="evC_docs" style="display:none">';
-  h+='<div class="panel"><div style="padding:14px 18px;border-bottom:1px solid var(--card-border);display:flex;justify-content:space-between;align-items:center"><div style="font-size:13px;font-weight:600;color:var(--gold)">Dokumente</div><button class="btn btn-s" onclick="eAddDoc(\''+id+'\',\''+(oId||'')+'\')">+ Dokument erfassen</button></div><div id="eDocList" style="padding:18px;text-align:center;color:var(--text-dim);font-size:11px">Lade...</div></div>';
-  h+='</div>';// /evC_docs
-  h+='<div id="evC_technik" style="display:none"><div id="evTechnikCont"></div></div>';
+  h+='</div>';
+  // ROW 2: Technik & Aufträge (collapsible)
+  h+='<div class="panel" style="margin-bottom:14px">';
+  h+='<div style="padding:14px 18px;border-bottom:1px solid var(--card-border);display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="evToggleTk()">';
+  h+='<div style="font-size:13px;font-weight:600;color:var(--gold)">&#x1F527; Technik &amp; Auftr\u00e4ge&nbsp;';
+  h+='<span style="font-size:11px;font-weight:400;color:var(--text-dim)">'+angeb.length+' Angebote &middot; '+bests.length+' Bestellungen &middot; '+rechs.length+' Rechnungen</span></div>';
+  h+='<span id="evTkArr" style="color:var(--text-dim);font-size:16px">&#9660;</span>';
+  h+='</div><div id="evTkCont" style="padding:14px">';
+  h+=tkEinheitTechnikHtml(id,oId||'');
+  h+='</div></div>';
+  // ROW 3: Dokumente & Fotos
+  h+='<div class="panel" style="margin-bottom:20px">';
+  h+='<div style="padding:14px 18px;border-bottom:1px solid var(--card-border);display:flex;justify-content:space-between;align-items:center">';
+  h+='<div style="font-size:13px;font-weight:600;color:var(--gold)">&#128206; Dokumente &amp; Fotos</div>';
+  h+='<button class="btn btn-s" onclick="eAddDoc(\''+id+'\',\''+(oId||'')+'\')">+ Dokument erfassen</button>';
+  h+='</div>';
+  h+='<div id="eDocList" style="padding:14px;min-height:60px;color:var(--text-dim);font-size:11px">Lade...</div>';
+  h+='</div>';
   dv.innerHTML=h;
-  // Dokumente asynchron laden
   eLoadDocs(id,e.objekt_id);
 }
-
-/** Tab-Wechsel in Wohnungs-Detail */
-function setEVTab(tab){
-  var tabs=['stamm','docs','technik'];
-  var bar=document.getElementById('evTabBar');
-  if(bar){var btns=bar.querySelectorAll('button');tabs.forEach(function(t,i){if(btns[i])btns[i].className=(t===tab?'on':'')})}
-  tabs.forEach(function(t){var c=document.getElementById('evC_'+t);if(c)c.style.display=(t===tab?'block':'none')});
-  if(tab==='technik'){
-    var tc=document.getElementById('evTechnikCont');
-    if(tc)tc.innerHTML=tkEinheitTechnikHtml(_evCurId,_evCurOId);
-  }
+/** Technik-Sektion in Wohnungs-Detail ein-/ausblenden */
+function evToggleTk(){
+  var c=document.getElementById('evTkCont'),a=document.getElementById('evTkArr');
+  if(!c)return;
+  if(c.style.display==='none'){c.style.display='block';if(a)a.innerHTML='&#9660;';}
+  else{c.style.display='none';if(a)a.innerHTML='&#9658;';}
 }
 
 /** Dokumente einer Wohnung laden und anzeigen */
